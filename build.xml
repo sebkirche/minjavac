@@ -71,4 +71,14 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+    <target name="javacc" depends="-init-check">
+        <echo>${javacc.outdir}</echo>
+        <javacc outputdirectory="${javacc.outdir}"
+                javacchome="${javacc.home}"
+                target="${javacc.file}"
+                static="true"/>
+    </target>
+
+
 </project>

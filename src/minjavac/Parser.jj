@@ -1,0 +1,123 @@
+PARSER_BEGIN(Parser)
+package minjavac;
+
+public class Parser {
+  public static void main (String[] args) throws Exception {
+    if (args.length == 1) {
+      new Parser(new java.io.FileInputStream(args[0]));
+    }
+    else if (args.length == 0) {
+      new Parser(System.in);
+    }
+    else {
+      System.out.println("Usage: minjavac input or minjavac < input.");
+      return;
+    }
+
+    for (;;) {
+      try {
+        Token token = Parser.getNextToken();
+        if (token.kind == ParserConstants.EOF) break;
+        System.out.println(token);
+      } catch (TokenMgrError e) {
+        System.out.println(e.getMessage());
+		break;
+      }
+    }
+  }
+}
+PARSER_END(Parser)
+
+
+SKIP : /* White space */
+{
+  " " | "\t" | "\n" | "\r" | "\f"
+}
+
+
+SPECIAL_TOKEN : /* Comments */
+{
+  < LINE_COMMENT      :
+    "//" (~["\n","\r"])* ("\n" | "\r" (~[]))?
+  > |
+
+  < FORMAL_COMMENT    :
+    "/**" (~["/"] ( ~["*"] | "*" ~["/"] )* ("*")? )? "*/"
+  > |
+
+  < MULTILINE_COMMENT :
+    "/*" (~["*"] | "*" ~["/"])* ("*")? "*/"
+  >
+}
+
+
+TOKEN : /* Keywords */
+{
+   < INT       : "int" >
+ | < VOID      : "void" >
+ | < STRING    : "String" >
+ | < BOOLEAN   : "boolean" >
+
+ | < NULL      : "null" >
+ | < THIS      : "this" >
+ | < TRUE      : "true" >
+ | < FALSE     : "false" >
+
+ | < MAIN      : "main" >
+ | < LENGTH    : "length" >
+ | < PRINT     : "System.out.println" >
+
+ | < IF        : "if" >
+ | < NEW       : "new" >
+ | < ELSE      : "else" >
+ | < CLASS     : "class" >
+ | < WHILE     : "while" >
+ | < PUBLIC    : "public" >
+ | < RETURN    : "return" >
+ | < STATIC    : "static" >
+ | < EXTENDS   : "extends" >
+ | < INTERFACE : "interface" >
+}
+
+
+TOKEN : /* Operators */
+{
+   < ADD  : "+" >
+ | < SUB  : "-" >
+ | < MULT : "*" >
+
+ | < AND  : "&&" >
+ | < NOT  : "!" >
+ | < LESS : "<" >
+
+ | < ASSIGN : "=" >
+}
+
+
+TOKEN : /* Separators */
+{
+   < LPARENS  : "(" >
+ | < RPARENS  : ")" >
+ | < RBRACKET : "[" >
+ | < LBRACKET : "]" >
+ | < LBRACE   : "{" >
+ | < RBRACE   : "}" >
+
+ | < COMMA : "," >
+ | < DOT   : "." >
+ | < SEMI  : ";" >
+}
+
+
+TOKEN : /* Numbers */
+{
+  < NUM : "0" | ["1"-"9"](["0"-"9"])* >
+} 
+
+
+TOKEN : /* Identifiers */
+{
+    < ID : <LETTER> (<LETTER> | ["0"-"9"])* >
+
+  | < #LETTER : "$" | "_" | ["a"-"z","A"-"Z"] >
+}
