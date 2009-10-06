@@ -1,0 +1,103 @@
+PARSER_BEGIN(GrammarParser)
+package minjavac.manualParser.grammar;
+
+import java.util.LinkedList;
+import java.util.List;
+
+public class GrammarParser {
+  private List<Rule> grammar;
+
+  public List<Rule> parse() throws ParseException {
+    grammar = new LinkedList<Rule>();
+
+    while (true) {
+      rule();
+      match(EOR);
+      if (lookahead(EOF)) break;
+    }
+
+    match(EOF);
+
+    return grammar;
+  }
+
+  public void rule() throws ParseException {
+    match(ID);
+    String lhs = token.image;
+
+    match(ASSIGN);
+    rightHandSide(lhs);
+  }
+
+  public void rightHandSide(String lhs) throws ParseException {
+    while (true) {
+      if (lookahead(LAMBDA)) {
+        match(LAMBDA);
+        grammar.add(new Rule(lhs));
+      }
+      else {
+        List<String> rhs = new LinkedList<String>();
+
+        while (lookahead(ID)) {
+          match(ID);
+          rhs.add(token.image);
+        }
+
+        grammar.add(new Rule(lhs, rhs));
+      }
+
+      if (lookahead(CHOICE))
+        match(CHOICE);
+      else
+        break;
+    }
+  }
+
+  private void match(int tok) throws ParseException {
+    getNextToken();
+
+    if (token.kind != tok)
+      throw new ParseException("Parse error: "
+           + "unexpected " + token.image +
+             ", expected " + GrammarParserConstants.tokenImage[tok]);
+  }
+
+  private boolean lookahead(int tok) throws ParseException {
+    return getToken(1).kind == tok;
+  }
+}
+
+
+PARSER_END(GrammarParser)
+
+
+SKIP : /* White space */
+{
+  " " | "\t" | "\n" | "\r" | "\f"
+}
+
+
+SPECIAL_TOKEN : /* Comments */
+{
+  < LINE_COMMENT      :
+    "//" (~["\n","\r"])* ("\n" | "\r" (~[]))?
+  > |
+
+  < FORMAL_COMMENT    :
+    "/**" (~["/"] ( ~["*"] | "*" ~["/"] )* ("*")? )? "*/"
+  > |
+
+  < MULTILINE_COMMENT :
+    "/*" (~["*"] | "*" ~["/"])* ("*")? "*/"
+  >
+}
+
+
+TOKEN : /* Keywords */
+{
+   < ASSIGN : "::=" >
+ | < CHOICE : "|" >
+ | < EOR    : ";" >
+ | < LAMBDA : "#" >
+ | < ID     : "<" (["a"-"z","A"-"Z"])+ ">" >
+}
