@@ -5,9 +5,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class GrammarParser implements GrammarParserConstants {
+  private boolean firstRule;
+  private String firstSymbol;
   private List<Rule> grammar;
 
   public List<Rule> parse() throws ParseException {
+    firstRule = true;
     grammar = new LinkedList<Rule>();
 
     while (true) {
@@ -25,25 +28,71 @@ public class GrammarParser implements GrammarParserConstants {
     match(ID);
     String lhs = token.image;
 
+    if (firstRule) {
+      firstRule = false;
+      firstSymbol = removeBrackets(lhs);
+    }
+
     match(ASSIGN);
     rightHandSide(lhs);
   }
 
   public void rightHandSide(String lhs) throws ParseException {
+    String nlhs = lhs;
+
     while (true) {
       if (lookahead(LAMBDA)) {
         match(LAMBDA);
-        grammar.add(new Rule(lhs));
+        addRule(new Rule(lhs));
       }
       else {
         List<String> rhs = new LinkedList<String>();
 
-        while (lookahead(ID)) {
-          match(ID);
-          rhs.add(token.image);
+        while (true) {
+          if (lookahead(ID)) {
+            match(ID);
+            rhs.add(token.image);
+          }
+          else if (lookahead(LPARENS)) {
+            nlhs = addPrefix(nlhs);
+
+            match(LPARENS);
+            rightHandSide(nlhs);
+            match(RPARENS);
+
+            if (lookahead(STAR)) {
+              match(STAR);
+
+              boolean has_lambda = false;
+
+              for (Rule r : getMatchingRules(nlhs))
+                if (r.isLambda())
+                  has_lambda = true;
+                else
+                  r.getRhs().add(removeBrackets(nlhs));
+
+              if (!has_lambda)
+                addRule(new Rule(nlhs, lambdaRhs()));
+            }
+
+            rhs.add(nlhs);
+          }
+          else if (lookahead(LBRACKET)) {
+            nlhs = addPrefix(nlhs);
+
+            match(LBRACKET);
+            rightHandSide(nlhs);
+            match(RBRACKET);
+
+            addRule(new Rule(nlhs, lambdaRhs()));
+            rhs.add(nlhs);
+          }
+          else {
+            break;
+          }
         }
 
-        grammar.add(new Rule(lhs, rhs));
+        addRule(new Rule(lhs, rhs));
       }
 
       if (lookahead(CHOICE))
@@ -51,6 +100,53 @@ public class GrammarParser implements GrammarParserConstants {
       else
         break;
     }
+  }
+
+  public String getFirstSymbol() {
+    return firstSymbol;
+  }
+
+  private String addPrefix(String s) {
+    return "<" + "@" + s.substring(1);
+  }
+
+  private void addRule(Rule r) {
+    if (grammar.isEmpty()) {
+      grammar.add(r);
+      return;
+    }
+
+    String lhs = r.getLhs();
+    int i = grammar.size()-1;
+
+    while (i >= 0) {
+      Rule _r = grammar.get(i--);
+      if (!_r.getLhs().endsWith(lhs)) break;
+    }
+
+    grammar.add(i+1, r);
+  }
+
+  private String removeBrackets(String s) {
+    if (s.startsWith("<"))
+      return s.substring(1, s.length()-1);
+    else
+      return s;
+  }
+
+  private List<String> lambdaRhs() {
+    return new LinkedList<String>();
+  }
+
+  private List<Rule> getMatchingRules(String lhs) {
+    lhs = removeBrackets(lhs);
+    List<Rule> l = new LinkedList<Rule>();
+
+    for (Rule r : grammar)
+      if (r.getLhs().equals(lhs))
+        l.add(r);
+
+    return l;
   }
 
   private void match(int tok) throws ParseException {
@@ -220,7 +316,7 @@ public class GrammarParser implements GrammarParserConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[14];
+    boolean[] la1tokens = new boolean[19];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -234,7 +330,7 @@ public class GrammarParser implements GrammarParserConstants {
         }
       }
     }
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i < 19; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

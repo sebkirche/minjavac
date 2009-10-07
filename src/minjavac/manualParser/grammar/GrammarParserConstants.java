@@ -23,9 +23,19 @@ public interface GrammarParserConstants {
   /** RegularExpression Id. */
   int EOR = 11;
   /** RegularExpression Id. */
-  int LAMBDA = 12;
+  int LPARENS = 12;
   /** RegularExpression Id. */
-  int ID = 13;
+  int RPARENS = 13;
+  /** RegularExpression Id. */
+  int LBRACKET = 14;
+  /** RegularExpression Id. */
+  int RBRACKET = 15;
+  /** RegularExpression Id. */
+  int STAR = 16;
+  /** RegularExpression Id. */
+  int LAMBDA = 17;
+  /** RegularExpression Id. */
+  int ID = 18;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -44,6 +54,11 @@ public interface GrammarParserConstants {
     "\"::=\"",
     "\"|\"",
     "\";\"",
+    "\"(\"",
+    "\")\"",
+    "\"[\"",
+    "\"]\"",
+    "\"*\"",
     "\"#\"",
     "<ID>",
   };
