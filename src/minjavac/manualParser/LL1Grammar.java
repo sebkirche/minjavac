@@ -7,10 +7,6 @@ import minjavac.ParserConstants;
 import minjavac.manualParser.grammar.*;
 
 public class LL1Grammar implements ParserConstants {
-  private final static String minJavaGrammar = 
-          "<goal> ::= ((<ADD> | <ASSIGN>) <NUM>)*;"
-  ;
-
   private String firstSymbol;
   private List<Rule> grammar;
   private Map<String,Set<String>> first, follow;
@@ -20,7 +16,13 @@ public class LL1Grammar implements ParserConstants {
   public LL1Grammar() { }
 
   public List<Rule> processGrammar() throws Exception {
-    GrammarParser gp = new GrammarParser(new StringReader(minJavaGrammar));
+    InputStream input = getClass().getClassLoader().getResource(
+            "minjavac/manualParser/minjava.ebnf"
+    ).openStream();
+
+    GrammarParser gp = new GrammarParser(input);
+
+
     grammar = gp.parse();
     firstSymbol = gp.getFirstSymbol();
 
@@ -54,10 +56,6 @@ public class LL1Grammar implements ParserConstants {
     mountFirst();
     mountFollow();
     checkLL1();
-
-    System.out.println("grammar = ");
-    for (Rule r : grammar)
-      System.out.println("\t" + r);
 
     return grammar;
   }
@@ -206,7 +204,7 @@ public class LL1Grammar implements ParserConstants {
         if (firstBeta.contains(lambda) &&
             !intersection(firstAlpha, followA).isEmpty())
           throw new Exception(
-            "LL(1) conflict: rule " + r2 + " can be lambda and " +
+            "LL(1) conflict: variable " + r2.getLhs() + " can be lambda and " +
             " rule " + r1 + " conflicts with follow of " + r1.getLhs()
           );
       }
@@ -218,6 +216,24 @@ public class LL1Grammar implements ParserConstants {
 
   private Set<String> nonTerminals() {
     return nonTerminalId.keySet();
+  }
+
+  private List<Rule> getMatchingRules(String lhs) {
+    lhs = removeBrackets(lhs);
+    List<Rule> l = new LinkedList<Rule>();
+
+    for (Rule r : grammar)
+      if (r.getLhs().equals(lhs))
+        l.add(r);
+
+    return l;
+  }
+
+  private String removeBrackets(String s) {
+    if (s.startsWith("<"))
+      return s.substring(1, s.length()-1);
+    else
+      return s;
   }
 
   public Set<String> filterLambda(Set<String> s) {
@@ -250,5 +266,51 @@ public class LL1Grammar implements ParserConstants {
     Set<T> s = new HashSet<T>(a);
     s.retainAll(b);
     return s;
+  }
+
+  private void printGrammar() {
+    System.out.println("Grammar:");
+
+    Set<String> used = new HashSet<String>();
+
+    for (Rule _r : grammar) {
+      String var = _r.getLhs();
+      
+      if (used.contains(var))
+        continue;
+      else
+        used.add(var);
+
+      System.out.print("  " + var + " ::=");
+
+      List<Rule> l = getMatchingRules(var);
+
+      if (l.size() == 1) {
+        System.out.println(rhsString(l.get(0).getRhs())+";");
+        continue;
+      }
+
+      boolean firstR = true;
+      for (Rule r : getMatchingRules(var)) {
+        System.out.print("\n    ");
+        if (firstR) {
+          firstR = false;
+          System.out.print(" ");
+        }
+        else {
+          System.out.print("|");
+        }
+
+        System.out.print(rhsString(r.getRhs()));
+      }
+
+      System.out.println(";");
+    }
+  }
+
+  private String rhsString(List<String> rhs) {
+    String str = "";
+    for (String s : rhs) str += " " + s;
+    return str;
   }
 }
