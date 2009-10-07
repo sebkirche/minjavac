@@ -77,9 +77,9 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int RPARENS = 38;
   /** RegularExpression Id. */
-  int RBRACKET = 39;
+  int LBRACKET = 39;
   /** RegularExpression Id. */
-  int LBRACKET = 40;
+  int RBRACKET = 40;
   /** RegularExpression Id. */
   int LBRACE = 41;
   /** RegularExpression Id. */

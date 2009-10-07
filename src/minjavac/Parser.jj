@@ -98,8 +98,8 @@ TOKEN : /* Separators */
 {
    < LPARENS  : "(" >
  | < RPARENS  : ")" >
- | < RBRACKET : "[" >
- | < LBRACKET : "]" >
+ | < LBRACKET : "[" >
+ | < RBRACKET : "]" >
  | < LBRACE   : "{" >
  | < RBRACE   : "}" >
 

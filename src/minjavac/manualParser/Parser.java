@@ -22,7 +22,11 @@ public class Parser implements ParserConstants {
       return;
     }
 
-    p.parse();
+    try {
+      p.parse();
+    } catch (ParseException e) {
+      System.out.println(e.getMessage());
+    }
   }
 
   private enum CellType { Rule, Sync, Error };
@@ -95,11 +99,16 @@ public class Parser implements ParserConstants {
           match(A);
           System.out.println("Matched " + A);
         }
-        else
+        else {
+          Token t = getLookaheadToken();
+
           throw new ParseException(
-            "Unexpected " + getLookaheadToken() +
-            " was expecting " + A
+            "Unexpected " + t.image +
+            " was expecting " + A +
+            " at line " + t.beginLine +
+            ", column " + t.beginColumn
           );
+        }
       }
       else if (A.equals(ll.lambda)) {
         continue;
@@ -117,9 +126,13 @@ public class Parser implements ParserConstants {
             stack.push(beta.get(i));
         }
         else {
+          Token t = getLookaheadToken();
+
           throw new ParseException(
-            "Unexpected " + getLookaheadToken() +
-            " was expecting one of " + ll.filterLambda(first.get(A))
+            "Unexpected " + t.image +
+            " was expecting one of " + ll.filterLambda(first.get(A)) +
+            " at line " + t.beginLine +
+            ", column " + t.beginColumn
           );
         }
       }
