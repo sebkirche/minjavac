@@ -3,27 +3,28 @@ package minjavac;
 
 public class Parser {
   public static void main (String[] args) throws Exception {
-    if (args.length == 1) {
-      new Parser(new java.io.FileInputStream(args[0]));
-    }
-    else if (args.length == 0) {
-      new Parser(System.in);
-    }
-    else {
-      System.out.println("Usage: minjavac input or minjavac < input.");
-      return;
-    }
+      Parser parser = null;
 
-    for (;;) {
-      try {
-        Token token = Parser.getNextToken();
-        if (token.kind == ParserConstants.EOF) break;
-        System.out.println(token);
-      } catch (TokenMgrError e) {
-        System.out.println(e.getMessage());
-		break;
+      if (args.length == 1) {
+          parser = new Parser(new java.io.FileInputStream(args[0]));
       }
-    }
+      else if (args.length == 0) {
+        parser = new Parser(System.in);
+      }
+      else {
+        System.out.println("Usage: Parser < input filename or Parser input filename.");
+        return;
+      }
+
+      try {
+        parser.Goal();
+      }
+      catch (ParseException e) {
+        System.out.println("Exiting.");
+        throw e;
+      }
+
+      System.out.println("Input program is syntatically correct.");
   }
 }
 PARSER_END(Parser)
@@ -120,4 +121,248 @@ TOKEN : /* Identifiers */
     < ID : <LETTER> (<LETTER> | ["0"-"9"])* >
 
   | < #LETTER : "$" | "_" | ["a"-"z","A"-"Z"] >
+}
+
+
+void Goal() :
+{}
+{
+  MainClass() (ClassDeclaration())* <EOF>
+}
+
+void MainClass() :
+{}
+{
+  <CLASS> <ID>
+  <LBRACE>
+    <PUBLIC> <STATIC> <VOID> <MAIN>
+    <LPARENS>
+      <STRING> <LBRACKET> <RBRACKET> <ID>
+    <RPARENS>
+    <LBRACE>
+      PrintStatement()
+    <RBRACE>
+  <RBRACE>
+}
+
+void ClassDeclaration() :
+{}
+{
+  <CLASS> <ID> ClassDeclarationTail()
+}
+
+void ClassDeclarationTail() :
+{}
+{
+  [<EXTENDS> <ID>]
+  <LBRACE>
+    (VarDeclaration())* (MethodDeclaration())*
+  <RBRACE>
+}
+
+void VarDeclaration() :
+{}
+{
+  Type() <ID> <SEMI>
+}
+
+void MethodDeclaration() :
+{}
+{
+  <PUBLIC> Type() <ID>
+  <LPARENS>
+    [FormalParameterList()]
+  <RPARENS>
+  <LBRACE>
+    [VarDeclarationOrStatement()]
+    <RETURN> Expression() <SEMI>
+  <RBRACE>
+}
+
+void FormalParameterList() :
+{}
+{
+  FormalParameter() (<COMMA> FormalParameter())*
+}
+
+void FormalParameter() :
+{}
+{
+  Type() <ID>
+}
+
+void Type() :
+{}
+{
+   ArrayOrIntegerType()
+ | BooleanType()
+ | <ID>
+}
+
+void ArrayOrIntegerType() :
+{}
+{
+  <INT> [<LBRACKET> <RBRACKET>]
+}
+
+void BooleanType() :
+{}
+{
+  <BOOLEAN>
+}
+
+void VarDeclarationOrStatement() :
+{}
+{
+   (ArrayOrIntegerType() | BooleanType()) VarDeclarationTail()
+ | Block() Statements()
+ | IfStatement() Statements()
+ | WhileStatement() Statements()
+ | PrintStatement() Statements()
+ | <ID> IdentifierDeclarationOrStatement()
+}
+
+void VarDeclarationTail() :
+{}
+{
+  <ID> <SEMI> VarDeclarationOrStatement()
+}
+
+void IdentifierDeclarationOrStatement() :
+{}
+{
+   <ID> <SEMI> VarDeclarationOrStatement()
+ | IdentifierStatementTail() Statements()
+}
+
+void Statements() :
+{}
+{
+  (Statement())*
+}
+
+void Statement() :
+{}
+{
+   Block()
+ | IfStatement()
+ | WhileStatement()
+ | PrintStatement()
+ | <ID> IdentifierStatementTail()
+}
+
+void Block() :
+{}
+{
+  <LBRACE> Statements() <RBRACE>
+}
+
+void IfStatement() :
+{}
+{
+  <IF> <LPARENS> Expression() <RPARENS> Statement() <ELSE> Statement()
+}
+
+void WhileStatement() :
+{}
+{
+  <WHILE> <LPARENS> Expression() <RPARENS> Statement()
+}
+
+void PrintStatement() :
+{}
+{
+  <PRINT> <LPARENS> Expression() <RPARENS> <SEMI>
+}
+
+void IdentifierStatementTail() :
+{}
+{
+  [<LBRACKET> Expression() <RBRACKET>] <ASSIGN> Expression() <SEMI>
+}
+
+void Expression() :
+{}
+{
+  AndExpression()
+}
+
+void AndExpression() :
+{}
+{
+  LessThanExpression() (<AND> LessThanExpression())*
+}
+
+void LessThanExpression() :
+{}
+{
+  AdditiveExpression() (<LESS> AdditiveExpression())*
+}
+
+void AdditiveExpression() :
+{}
+{
+  TimesExpression() ((<ADD> | <SUB>) TimesExpression())*
+}
+
+void TimesExpression() :
+{}
+{
+  PrefixExpression() (<MULT> PrefixExpression())*
+}
+
+void PrefixExpression() :
+{}
+{
+  (<NOT>)* PostFixExpression()
+}
+
+void PostFixExpression() :
+{}
+{
+  PrimaryExpression() (ArrayLookup() | ArrayLengthOrMethodCall())*
+}
+
+void ArrayLookup() :
+{}
+{
+  <LBRACKET> Expression() <RBRACKET>
+}
+
+void ArrayLengthOrMethodCall() :
+{}
+{
+  <DOT> ArrayLengthOrMethodCallTail()
+}
+
+void ArrayLengthOrMethodCallTail() :
+{}
+{
+   <LENGTH>
+ | <ID> <LPARENS> [ExpressionList()] <RPARENS>
+}
+
+void PrimaryExpression() :
+{}
+{
+   <NUM>
+ | <TRUE>
+ | <FALSE>
+ | <ID>
+ | <THIS>
+ | <LPARENS> Expression() <RPARENS>
+ | <NEW> ArrayOrObjectAllocation()
+}
+
+void ArrayOrObjectAllocation() :
+{}
+{
+   <INT> <LBRACKET> Expression() <RBRACKET>
+ | <ID> <LPARENS> <RPARENS>
+}
+
+void ExpressionList() :
+{}
+{
+  Expression() (<COMMA> Expression())*
 }

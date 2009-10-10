@@ -90,7 +90,7 @@
   <LessThanExpression> (<AND> <LessThanExpression>)* ;
 
 <LessThanExpression> ::=
-  <AdditiveExpression> (<LESS> <AdditiveExpression>)* ;
+  <AdditiveExpression> [<LESS> <AdditiveExpression>] ;
 
 <AdditiveExpression> ::=
   <TimesExpression> ((<ADD>|<SUB>) <TimesExpression>)* ;
