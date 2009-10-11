@@ -1,11 +1,11 @@
-package minjavac.manualParser;
+package minjavac.tableParser;
 
 import java.io.*;
 import java.util.*;
 import minjavac.ParseException;
 import minjavac.ParserConstants;
 import minjavac.Token;
-import minjavac.manualParser.grammar.Rule;
+import minjavac.tableParser.grammar.Rule;
 
 public class Parser implements ParserConstants {
   public static void main(String[] args) throws Exception {

@@ -1,4 +1,4 @@
-package minjavac.manualParser.grammar;
+package minjavac.tableParser.grammar;
 
 import java.util.LinkedList;
 import java.util.List;

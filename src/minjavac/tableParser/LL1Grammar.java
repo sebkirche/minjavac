@@ -1,10 +1,10 @@
-package minjavac.manualParser;
+package minjavac.tableParser;
 
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.Field;
 import minjavac.ParserConstants;
-import minjavac.manualParser.grammar.*;
+import minjavac.tableParser.grammar.*;
 
 public class LL1Grammar implements ParserConstants {
   private String firstSymbol;
