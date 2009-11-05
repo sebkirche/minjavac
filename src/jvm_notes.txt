@@ -1,0 +1,354 @@
+## JVM ##
+
+- primitive types:
+	- numeric (integral): byte, short, int, long, char
+
+	- returnAddress: ponteiro para uma instrução bytecode
+		- nao tem mapeamento em MinJava nem em Java
+		- instruções jsr, ret, jsr_w
+
+	- boolean: suporte precário pela máquina virtual
+		- compila os comandos q usam boolean para int (ou byte)
+
+- reference types:
+	- class type, array type, interface type
+	- null
+
+- runtime data areas:
+	- pc (thread)
+	- jvm stack (thread): guarda stack frames
+	- heap (process)
+	- method area (process): análogo a um segmento "text" (código, constantes, etc.)
+
+- runtime constant pool (per class / interface):
+	- representação runtime do constant_pool do .class
+
+- frame: dados temporários, resultados, dynamic linking, valores de retorno, exceções
+	- tempo de vida da execução de um método
+	- variáveis locais, pilha de operandos (tamanhos determinados em compile time)
+	- referência para a constant_pool da classe do método atual
+	- current frame, current method, current class (per thread)
+
+- variáveis locais:
+	- tamanho do array tá no código do método no .class
+	- acessadas indexando a partir de 0
+	- usadas para passar parametros em invocação de métodos
+		- posição 0 vai ser o objeto no qual o método será chamado
+		- parametros do metodo começam na posição 1
+	- não podem ser acessadas antes de inicializadas
+
+- pilha de operandos:
+	- tamanho máximo da pilha tá no código do método no .class
+	- começa vazia
+	- contem elementos de qualquer tipo
+	- instruções para empilhar constantes, variaveis locais ou campos
+	- instruções para operar em elementos da pilha e empilhar o resultado
+	- retorno de métodos fica no topo da pilha após a invocação
+	- todos os caminhos de execução que levam para uma instrução I
+	  devem resultar no mesmo nível de pilha
+
+- métodos especiais de inicialização:
+	- invocados implicitamente pela JVM, nunca diretamente
+	- construtores
+		- todo construtor tem o nome <init>
+		- invocados manualmente com invokespecial (instancias nao inicializadas)
+	- inicialização de classes
+		- nome <clinit>
+		- sempre é static, sem argumentos
+
+- instruções:
+	- 1 byte - opcode, 0 ou mais bytes, operandos
+	- opcodes carregam informações de tipo:
+		- i (int), l (long), s (short), b (byte)
+		  c (char), f (float), d (double), a (reference)
+
+- instruções de load e store:
+	- transfere entre o array de locais e a pilha de operandos
+	- local -> stack:
+		- iload, iload_<n>, aload, aload_<n>
+	- stack -> local:
+		- istore, istore_<n>, astore, astore_<n>
+	- constant -> stack:
+		- bipush, sipush, ldc, ldc_w, ldc2_w, aconst_null, iconst_ml,
+		  iconst_<i>
+
+- instruções aritméticas:
+	- iadd, isub, imul, idiv, irem, ineg,
+          ishl, ior, iand, ixor, iinc, 
+
+- criação e manipulação de objetos:
+	- criar class instance: new
+	- criar array: newarray, anewarray, multianewarray
+	- acessar field: getfield, putfield, getstatic, putstatic
+	- array element -> stack: iaload, aaload
+	- stack -> array element: iastore, aastore
+	- arraylength
+	- instanceof, checkcast
+
+- pilha de operandos:
+	- pop, pop2, dup, dup2, dup_x1, dup2_x1, dup_x2, dup2_x2, swap
+
+- controle de fluxo:
+	- condicionais: ifeq, iflt, ifle, ifne, ifgt, ifge, ifnull, ifnonnull,
+			if_icmpeq, if_icmpne, if_icmplt, if_icmpgt, if_icmple,
+			if_icmpge, if_acmpeq, if_acmpne
+	- condicionais compostas: tableswitch, lookupswitch
+	- uncondicionais: goto, goto_w, jsr, jsr_w, ret
+
+- invocação e retorno de métodos:
+	- invokevirtual: instance method, dispatch virtual
+	- invokeinterface: interface  method
+	- invokespecial: instance method com handling especial
+		- inicialização de instancia
+		- método na classe atual
+		- método em uma super classe da atual
+	- invokestatic: static method
+	- retorno:
+		- ireturn, areturn, return (void, construtores ou inicializadores static)
+
+## Estrutura do class file ##
+
+    ClassFile {
+    	u4 magic;
+    	u2 minor_version;
+    	u2 major_version;
+    	u2 constant_pool_count;
+    	cp_info constant_pool[constant_pool_count-1];
+    	u2 access_flags;
+    	u2 this_class;
+    	u2 super_class;
+    	u2 interfaces_count;
+    	u2 interfaces[interfaces_count];
+    	u2 fields_count;
+    	field_info fields[fields_count];
+    	u2 methods_count;
+    	method_info methods[methods_count];
+    	u2 attributes_count;
+    	attribute_info attributes[attributes_count];
+    }
+
+- constant_pool[] é indexado em [1,constant_pool_count-1]
+
+- access_flags: PUBLIC | FINAL | SUPER | INTERFACE | ABSTRACT
+
+- this_class: index em constant_pool representando a classe sendo definida
+
+- super_class: 0 ou um index em constant_pool representando a classe pai
+	- a única classe com super_class 0 é a Object
+	- interfaces tbm tem super_class apontando para Object
+
+- interfaces[] é indexado em [0,interfaces_count-1]:
+	- cada elemento é um index em constant_pool
+	- na ordem esquerda-direita em que aparece no código fonte
+
+- fields[]: contem somente os campos declarados, não os herdados
+
+- methods[]: somente métodos declarados, construtores e inicializadores static
+
+- identificadores de classe e interface são sempre fully qualified:
+	- ex: java.lang.Thread = "java/lang/Thread"
+
+- descritores: representam o tipo de um field ou método
+
+ // tipo de uma classe, instancia ou variavel local
+
+ FieldDescriptor -> FieldType
+ ComponentType   -> FieldType
+ 
+ FieldType -> BaseType | ObjectType | ArrayType
+
+ BaseType   -> B | C | D | F | I | J | S | Z
+ ObjectType -> L <classname> ; // instancia de <classname>
+ ArrayType  -> [ ComponentType // array de uma dimensao
+ 
+ // Ex: int = I, Object = Ljava/lang/Object, double[][][] = [[[D
+
+ // assinatura de um método + tipo do retorno
+ // o descriptor n ve diferenças entre static e non-static
+
+ MethodDescriptor -> (ParameterDescriptor)* ReturnDescriptor
+
+ ParameterDescriptor -> FieldType
+ ReturnDescriptor -> FieldType | V   // type, void
+
+ // Ex: Object myMethod(int i, double d, Thread t)
+ //   = (IDLjava/Lang/Thread;)Ljava/lang/Object;
+
+
+
+## Instruções ##
+
+
+ldc constant          : ... => value
+
+iload i | iload_<n>   : ... => value
+
+aload_<n> | aload n   : ... => objectref
+
+astore i | astore_<n> : objectref => ...
+
+istore i | istore_<n> : value => ...
+
+
+
+aaload                : arrayref, index => value
+
+iaload                : arrayref, index => value
+
+aastore               : arrayref, index, value => ...
+
+iastore               : arrayref, index, value => ...
+
+
+
+instanceof type       : objectref => (1 | 0)
+
+checkcast type        : objectref => objectref	// n modifica ou ClassCastException
+
+
+dup                   : x => x, x
+
+dup_x1                : y, x => x, y, x
+
+dup_x2                : z, y, x => x, z, y, x
+
+pop                   : value => ...
+
+swap                  : x, y => y, x
+
+
+
+
+aconst_null           : ... => null
+
+iconst_<i>            : ... => i		// i : [-1,5]
+
+
+goto label            : ... => ...
+
+if_acmpeq label       : x, y => ...
+
+if_acmpne label       : x, y => ...
+
+
+if_icmpeq, if_icmpne,
+if_icmplt, if_icmpge,
+if_icmpgt, if_icmple label : x, y => ...
+
+ifeq, ifne, iflt,
+ifge, ifgt, ifle label : x => ...		// comparações com 0
+
+ifnull label          : x => ...
+
+ifnonnull label       : x => ...
+
+
+
+iinc i c              : ... => ...      	// locals[i] += c;
+
+iadd                  : x, y => (x + y)
+
+isub                  : x, y => (x - y)
+
+iand                  : x, y => (x & y)
+
+idiv                  : x, y => (x / y)
+
+imul                  : x, y => (x * y)
+
+ineg                  : x => (- x)
+
+ior                   : x, y => (x | y)
+
+irem                  : x, y => (x % y)
+
+
+new class             : ... => objectref
+
+newarray type         : count => arrayref
+
+anewarray type        : count => arrayref
+
+
+
+arraylength           : arrayref => length
+
+getfield field        : objectref => value
+
+putfield field        : objectref, value => ...
+
+getstatic field       : ... => value
+
+putstatic field       : value => ...
+
+
+invokeinterface method count : objectref, arg1, arg2, ... => ...
+
+invokestatic method   : arg1, arg2, ... => ...
+
+// instance initialization, private methods, superclass methods
+invokespecial method  : objectref, arg1, arg2, ... => ...
+
+// normais, protected, 
+invokevirtual method  : objectref, arg1, arg2, ... => ...
+
+areturn               : objectref => ...
+
+ireturn               : value => ...
+
+return                : ... => ...
+
+ret i                 : ... => ...
+
+nop                   : ... => ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Exemplos de tradução ##
+
+- máximo de 65535 variáveis locais
+
+new myClass(i, j, k);
+
+new LmyClass;
+dup
+iload_1
+iload_2
+iload_3
+invokespecial (III;)V (myMethod:LmyClass;)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

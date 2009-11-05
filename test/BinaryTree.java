@@ -248,7 +248,7 @@ class Tree{
 	    p_node = c_node ;
 	    c_node = c_node.GetRight() ;
 	}
-	ntb = p_node.SetRight(my_null);
+	ntb = p_node.SetRight(my_null); 
 	ntb = p_node.SetHas_Right(false);
 	return true ;
     }

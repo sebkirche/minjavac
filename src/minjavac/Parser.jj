@@ -296,7 +296,7 @@ void AndExpression() :
 void LessThanExpression() :
 {}
 {
-  AdditiveExpression() (<LESS> AdditiveExpression())*
+  AdditiveExpression() [<LESS> AdditiveExpression()]
 }
 
 void AdditiveExpression() :
@@ -320,7 +320,7 @@ void PrefixExpression() :
 void PostFixExpression() :
 {}
 {
-  PrimaryExpression() (ArrayLookup() | ArrayLengthOrMethodCall())*
+  PrimaryExpression() [ArrayLookup() | ArrayLengthOrMethodCall()]
 }
 
 void ArrayLookup() :
