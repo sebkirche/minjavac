@@ -1,3 +1,5 @@
+heroes: areg
+
 ## JVM ##
 
 - primitive types:
