@@ -350,6 +350,7 @@ void VarDeclarationOrStatement(VarDeclList vl, StatementList stl) :
      stmt = WhileStatement() |
      stmt = PrintStatement()
    )
+   { stl.addElement(stmt); }
    Statements(stl)
  |
    id = Identifier() IdentifierDeclarationOrStatement(id, vl, stl)
@@ -372,6 +373,7 @@ void IdentifierDeclarationOrStatement(
     Identifier id1, VarDeclList vl, StatementList stl) :
 {
   Identifier id2;
+  Statement stmt;
 }
 {
    id2 = Identifier() <SEMI>
@@ -381,7 +383,9 @@ void IdentifierDeclarationOrStatement(
    }
    VarDeclarationOrStatement(vl, stl)
  |
-   IdentifierStatementTail(id1) Statements(stl)
+   stmt = IdentifierStatementTail(id1)
+   { stl.addElement(stmt); }
+   Statements(stl)
 }
 
 
