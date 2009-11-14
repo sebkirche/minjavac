@@ -1,0 +1,1 @@
+package analysis.syntaxtree;public abstract class Type {  public abstract void accept( Visitor v ) ;}
