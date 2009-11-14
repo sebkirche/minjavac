@@ -1,1 +1,1 @@
-package analysis.syntaxtree;public class False extends Exp {  public void accept( Visitor v ) {    v.visit( this ) ;  }}
+package analysis.syntaxtree;public class False implements Exp {  public void accept(Visitor v) {    v.visit(this);  }}

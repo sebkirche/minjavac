@@ -1,7 +1,5 @@
 package analysis.syntaxtree;
 
-import analysis.syntaxtree.*;
-
 public interface Visitor {
   public void visit(Program n);
   public void visit(MainClass n);
@@ -31,7 +29,6 @@ public interface Visitor {
   public void visit(IntegerLiteral n);
   public void visit(True n);
   public void visit(False n);
-  public void visit(IdentifierExp n);
   public void visit(This n);
   public void visit(NewArray n);
   public void visit(NewObject n);
