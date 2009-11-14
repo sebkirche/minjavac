@@ -42,7 +42,7 @@ class TV {
 	ntb = root.Print();
 	System.out.println(root.Search(12));
 
-	return 0 ;
+	return 0;
     }
 
 }

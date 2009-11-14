@@ -21,7 +21,7 @@ class BBS{
 	aux01 = this.Print();
 	System.out.println(99999);
 	aux01 = this.Sort();
-	aux01 = this.Print();
+	aux01 = this.Print(1);
 	return 0 ;
     }
 
