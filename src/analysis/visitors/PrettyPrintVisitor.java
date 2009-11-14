@@ -1,11 +1,14 @@
-package analysis.syntaxtree;
+package analysis.visitors;
+
+import analysis.syntaxtree.*;
+import analysis.visitors.Visitor;
 
 public class PrettyPrintVisitor implements Visitor {
 
   // MainClass m;
   // ClassDeclList cl;
   public void visit(Program n) {
-    n.m.accept(this);
+    n.m.accept(this); 
     for (int i = 0; i < n.cl.size(); i++) {
       System.out.println();
       n.cl.elementAt(i).accept(this);

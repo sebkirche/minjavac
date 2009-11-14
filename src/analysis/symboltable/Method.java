@@ -1,4 +1,4 @@
-package analysis;
+package analysis.symboltable;
 
 import java.util.Map;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import analysis.syntaxtree.Type;
 
-class Method {
+public class Method {
   String name;
   Type returnType;
   List<Variable> paramList;
@@ -27,7 +27,7 @@ class Method {
     return returnType;
   }
 
-  public boolean addParam(String paramName, Type paramType) {
+  public boolean addParameter(String paramName, Type paramType) {
     if (constainsParameter(paramName)) {
       return false;
     }

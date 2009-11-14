@@ -1,1 +1,1 @@
-package analysis.syntaxtree;public class Identifier implements Exp {  public String s;  public Identifier(String as) {    s = as;  }  public void accept(Visitor v) {    v.visit(this);  }  @Override  public String toString() {    return s;  }}
+package analysis.syntaxtree;import analysis.visitors.Visitor;public class Identifier implements Exp {  public String s;  public Identifier(String as) {    s = as;  }  public void accept(Visitor v) {    v.visit(this);  }  @Override  public String toString() {    return s;  }}

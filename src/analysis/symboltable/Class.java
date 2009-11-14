@@ -1,4 +1,4 @@
-package analysis;
+package analysis.symboltable;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import analysis.syntaxtree.Type;
 import analysis.syntaxtree.IdentifierType;
 import java.util.Set;
 
-class Class {
+public class Class {
   Type classType;
   String name, baseClass;
   Map<String,Method> methodMap;

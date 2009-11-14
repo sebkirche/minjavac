@@ -1,5 +1,6 @@
 package parser;
 
+import analysis.visitors.PrettyPrintVisitor;
 import analysis.syntaxtree.* ;
 
 public class Parser implements ParserConstants {

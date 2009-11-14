@@ -1,1 +1,1 @@
-package analysis.syntaxtree;public class This implements Exp {  public void accept(Visitor v) {    v.visit(this);  }}
+package analysis.syntaxtree;import analysis.visitors.Visitor;public class This implements Exp {  public void accept(Visitor v) {    v.visit(this);  }}

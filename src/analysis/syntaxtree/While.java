@@ -1,1 +1,1 @@
-package analysis.syntaxtree;public class While implements Statement {  public Exp e;  public Statement s;  public While(Exp ae, Statement as) {    e = ae;    s = as;  }  public void accept(Visitor v) {    v.visit(this);  }}
+package analysis.syntaxtree;import analysis.visitors.Visitor;public class While implements Statement {  public Exp e;  public Statement s;  public While(Exp ae, Statement as) {    e = ae;    s = as;  }  public void accept(Visitor v) {    v.visit(this);  }}

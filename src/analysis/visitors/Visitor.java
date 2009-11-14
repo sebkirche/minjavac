@@ -1,4 +1,6 @@
-package analysis.syntaxtree;
+package analysis.visitors;
+
+import analysis.syntaxtree.*;
 
 public interface Visitor {
   public void visit(Program n);

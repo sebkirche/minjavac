@@ -1,10 +1,10 @@
-package analysis;
+package analysis.symboltable;
 
 import java.util.Map;
 import java.util.HashMap;
 import analysis.syntaxtree.*;
 
-class SymbolTable {
+public class SymbolTable {
   private Map<String,Class> classMap;
 
   public SymbolTable() {

@@ -1,8 +1,8 @@
-package analysis;
+package analysis.symboltable;
 
 import analysis.syntaxtree.Type;
 
-class Variable {
+public class Variable {
   String name;
   Type type;
 

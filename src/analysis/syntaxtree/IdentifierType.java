@@ -1,1 +1,1 @@
-package analysis.syntaxtree;public class IdentifierType extends Type {  public String s;  public IdentifierType(String as) {    s=as;  }  public void accept( Visitor v ) {    v.visit( this ) ;  }}
+package analysis.syntaxtree;import analysis.visitors.Visitor;public class IdentifierType extends Type {  public String s;  public IdentifierType(String as) {    s = as;  }  public void accept(Visitor v) {    v.visit(this);  }}

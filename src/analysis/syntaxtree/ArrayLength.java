@@ -1,1 +1,1 @@
-package analysis.syntaxtree;public class ArrayLength implements Exp {  public Exp e;  public ArrayLength(Exp ae) {    e = ae;  }  public void accept(Visitor v) {    v.visit(this);  }}
+package analysis.syntaxtree;import analysis.visitors.Visitor;public class ArrayLength implements Exp {  public Exp e;  public ArrayLength(Exp ae) {    e = ae;  }  public void accept(Visitor v) {    v.visit(this);  }}
