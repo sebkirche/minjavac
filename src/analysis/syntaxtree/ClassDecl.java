@@ -1,1 +1,1 @@
-package analysis.syntaxtree;import analysis.visitors.Visitor;public abstract class ClassDecl {  public abstract void accept(Visitor v);}
+package analysis.syntaxtree;import analysis.visitors.TypeVisitor;import analysis.visitors.Visitor;public interface ClassDecl {  public void accept(Visitor v);  public void accept(TypeVisitor v);}

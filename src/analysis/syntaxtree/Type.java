@@ -1,1 +1,1 @@
-package analysis.syntaxtree;import analysis.visitors.Visitor;public abstract class Type {  public abstract void accept(Visitor v);}
+package analysis.syntaxtree;import analysis.visitors.TypeVisitor;import analysis.visitors.Visitor;public interface Type {  public void accept(Visitor v);  public void accept(TypeVisitor v);}
