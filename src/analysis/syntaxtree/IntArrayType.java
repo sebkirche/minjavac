@@ -1,1 +1,1 @@
-package analysis.syntaxtree;import analysis.visitors.TypeVisitor;import analysis.visitors.Visitor;public class IntArrayType implements Type {  public void accept(Visitor v) {    v.visit(this);  }  public void accept(TypeVisitor v) {    v.visit(this);  }}
+package analysis.syntaxtree;import analysis.visitors.TypeVisitor;import analysis.visitors.Visitor;public class IntArrayType implements Type {  public void accept(Visitor v) {    v.visit(this);  }  public Type accept(TypeVisitor v) {    return v.visit(this);  }}

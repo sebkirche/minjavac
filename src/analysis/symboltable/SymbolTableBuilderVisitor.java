@@ -70,6 +70,8 @@ public class SymbolTableBuilderVisitor implements Visitor {
     
     for (MethodDecl methodD : classDecl.ml.getList())
       methodD.accept(this);
+
+    currentClass = null;
   }
 
   public void visit(ClassDeclExtends classDecl) {
@@ -86,6 +88,8 @@ public class SymbolTableBuilderVisitor implements Visitor {
 
     for (MethodDecl methodD : classDecl.ml.getList())
       methodD.accept(this);
+
+    currentClass = null;
   }
 
   public void visit(VarDecl varDecl) {
@@ -229,11 +233,11 @@ public class SymbolTableBuilderVisitor implements Visitor {
   public void visit(This n) {
   }
 
-  public void visit(NewArray newArrayStmt) {
-    newArrayStmt.e.accept(this);
+  public void visit(NewArray newArrayExp) {
+    newArrayExp.e.accept(this);
   }
 
-  public void visit(NewObject newObjectStmt) {
+  public void visit(NewObject newObjectExp) {
     // deixa pra pegar o erro no type checking
   }
 
