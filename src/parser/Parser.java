@@ -756,7 +756,7 @@ public class Parser implements ParserConstants {
       break;
     case ID:
       id = Identifier();
-     {if (true) return new Identifier(id.toString());}
+     {if (true) return id;}
       break;
     case THIS:
       jj_consume_token(THIS);
@@ -829,7 +829,7 @@ public class Parser implements ParserConstants {
   static final public Identifier Identifier() throws ParseException {
   Token t;
     t = jj_consume_token(ID);
-             {if (true) return new Identifier(t.image);}
+             {if (true) return new Identifier(t.image, t);}
     throw new Error("Missing return statement in function");
   }
 

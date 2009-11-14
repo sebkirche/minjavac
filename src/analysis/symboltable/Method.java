@@ -28,7 +28,7 @@ public class Method {
   }
 
   public boolean addParameter(String paramName, Type paramType) {
-    if (constainsParameter(paramName)) {
+    if (containsParameter(paramName)) {
       return false;
     }
 
@@ -49,9 +49,8 @@ public class Method {
   }
 
   public boolean addLocalVar(String varName, Type varType) {
-    if (localVarMap.containsKey(varName)) {
+    if (containsVar(varName) || containsParameter(varName))
       return false;
-    }
 
     localVarMap.put(varName, new Variable(varName, varType));
     return true;
@@ -61,7 +60,7 @@ public class Method {
     return localVarMap.containsKey(varName);
   }
 
-  public boolean constainsParameter(String pName) {
+  public boolean containsParameter(String pName) {
     for (Variable v : paramList) {
       if (v.name().equals(pName)) {
         return true;
