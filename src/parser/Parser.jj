@@ -1,0 +1,665 @@
+PARSER_BEGIN(Parser)
+package parser;
+
+import analysis.visitors.*;
+import analysis.syntaxtree.*;
+
+public class Parser {
+  public static void main(String args[]) throws Exception {
+    Parser parser = null ;
+
+    if (args.length == 1) {
+        parser = new Parser(new java.io.FileInputStream(args[0]));
+    }
+    else if (args.length == 0) {
+      parser = new Parser(System.in);
+    }
+    else {
+      System.out.println("Usage: Parser < input filename or Parser input filename.");
+      return;
+    }
+
+    Program p = null ;
+
+    try {
+      p = parser.Goal() ;
+    }
+    catch ( ParseException e ) {
+      System.out.println( "Exiting." ) ;
+      throw e ;
+    }
+  }
+}
+PARSER_END(Parser)
+
+
+SKIP : /* White space */
+{
+  " " | "\t" | "\n" | "\r" | "\f"
+}
+
+
+SPECIAL_TOKEN : /* Comments */
+{
+  < LINE_COMMENT      :
+    "//" (~["\n","\r"])* ("\n" | "\r" (~[]))?
+  > |
+
+  < FORMAL_COMMENT    :
+    "/**" (~["/"] ( ~["*"] | "*" ~["/"] )* ("*")? )? "*/"
+  > |
+
+  < MULTILINE_COMMENT :
+    "/*" (~["*"] | "*" ~["/"])* ("*")? "*/"
+  >
+}
+
+
+TOKEN : /* Keywords */
+{
+   < INT       : "int" >
+ | < VOID      : "void" >
+ | < STRING    : "String" >
+ | < BOOLEAN   : "boolean" >
+
+ | < NULL      : "null" >
+ | < THIS      : "this" >
+ | < TRUE      : "true" >
+ | < FALSE     : "false" >
+
+ | < MAIN      : "main" >
+ | < LENGTH    : "length" >
+ | < PRINT     : "System.out.println" >
+
+ | < IF        : "if" >
+ | < NEW       : "new" >
+ | < ELSE      : "else" >
+ | < CLASS     : "class" >
+ | < WHILE     : "while" >
+ | < PUBLIC    : "public" >
+ | < RETURN    : "return" >
+ | < STATIC    : "static" >
+ | < EXTENDS   : "extends" >
+ | < INTERFACE : "interface" >
+}
+
+
+TOKEN : /* Operators */
+{
+   < ADD  : "+" >
+ | < SUB  : "-" >
+ | < MULT : "*" >
+
+ | < AND  : "&&" >
+ | < NOT  : "!" >
+ | < LESS : "<" >
+
+ | < ASSIGN : "=" >
+}
+
+
+TOKEN : /* Separators */
+{
+   < LPARENS  : "(" >
+ | < RPARENS  : ")" >
+ | < LBRACKET : "[" >
+ | < RBRACKET : "]" >
+ | < LBRACE   : "{" >
+ | < RBRACE   : "}" >
+
+ | < COMMA : "," >
+ | < DOT   : "." >
+ | < SEMI  : ";" >
+}
+
+
+TOKEN : /* Numbers */
+{
+  < NUM : "0" | ["1"-"9"](["0"-"9"])* >
+} 
+
+
+TOKEN : /* Identifiers */
+{
+    < ID : <LETTER> (<LETTER> | ["0"-"9"])* >
+
+  | < #LETTER : "$" | "_" | ["a"-"z","A"-"Z"] >
+}
+
+
+Program Goal() :
+{
+  MainClass m;
+  ClassDeclList cl;
+}
+{
+  m = MainClass() cl = ClassDeclarationList() <EOF>
+ { return new Program(m, cl); }
+}
+
+
+ClassDeclList ClassDeclarationList() :
+{
+  ClassDeclList l = new ClassDeclList();
+  ClassDecl cd;
+}
+{
+  (cd = ClassDeclaration() { l.addElement(cd); })*
+  { return l; }
+}
+
+
+MainClass MainClass() :
+{
+  Identifier name, args;
+  Statement stmt;
+}
+{
+  <CLASS> name = Identifier()
+  <LBRACE>
+    <PUBLIC> <STATIC> <VOID> <MAIN>
+    <LPARENS>
+      <STRING> <LBRACKET> <RBRACKET> args = Identifier()
+    <RPARENS>
+    <LBRACE>
+      stmt = Statement()
+    <RBRACE>
+  <RBRACE>
+  { return new MainClass(name, args, stmt); }
+}
+
+ClassDecl ClassDeclaration() :
+{
+  ClassDecl c;
+  Identifier name;
+}
+{
+  <CLASS> name = Identifier() c = ClassDeclarationTail(name)
+  { return c; }
+}
+
+
+ClassDecl ClassDeclarationTail(Identifier name) :
+{
+  Identifier basec;
+  VarDeclList vl;
+  MethodDeclList ml;
+}
+{
+  <EXTENDS> basec = Identifier()
+  <LBRACE>
+    vl = VarDeclarationList()
+    ml = MethodDeclarationList()
+  <RBRACE>
+  { return new ClassDeclExtends(name, basec, vl, ml); }
+
+  |
+
+  <LBRACE>
+    vl = VarDeclarationList()
+    ml = MethodDeclarationList()
+  <RBRACE>
+  { return new ClassDeclSimple(name, vl, ml); }
+}
+
+
+VarDeclList VarDeclarationList() :
+{
+  VarDeclList vl = new VarDeclList();
+  VarDecl v;
+}
+{
+  (v = VarDeclaration() { vl.addElement(v); })*
+  { return vl; }
+}
+
+
+MethodDeclList MethodDeclarationList() :
+{
+  MethodDeclList ml = new MethodDeclList();
+  MethodDecl m;
+}
+{
+  (m = MethodDeclaration() { ml.addElement(m); })*
+  { return ml; }
+}
+
+
+VarDecl VarDeclaration() :
+{
+  Type t;
+  Identifier i;
+}
+{
+  t = Type() i = Identifier() <SEMI>
+  { return new VarDecl(t, i); }
+}
+
+
+MethodDecl MethodDeclaration() :
+{
+  Type returnT;
+  Identifier name;
+  FormalList params;
+  VarDeclList varL = new VarDeclList();
+  StatementList stmtL = new StatementList();
+  Exp returnE;
+}
+{
+  <PUBLIC> returnT = Type() name = Identifier()
+  <LPARENS>
+    params = FormalParameterList()
+  <RPARENS>
+  <LBRACE>
+    [VarDeclarationOrStatement(varL, stmtL)]
+    <RETURN> returnE = Expression() <SEMI>
+  <RBRACE>
+  {
+    return new MethodDecl(
+      returnT, name, params, varL, stmtL, returnE
+    );
+  }
+}
+
+
+FormalList FormalParameterList() :
+{
+  FormalList fl = new FormalList();
+  Formal f;
+}
+{
+  [
+    f = FormalParameter()
+    { fl.addElement(f); }
+    (<COMMA> f = FormalParameter() { fl.addElement(f); })*
+  ]
+  { return fl; }
+}
+
+
+Formal FormalParameter() :
+{
+  Type varT;
+  Identifier name;
+}
+{
+  varT = Type() name = Identifier()
+  { return new Formal(varT, name); }
+}
+
+
+Type Type() :
+{
+  Type t;
+  Identifier id;
+}
+{
+   t = ArrayOrIntegerType()
+   { return t; }
+ | t = BooleanType()
+   { return t; }
+ | id = Identifier()
+   { return new IdentifierType(id.toString()); }
+}
+
+
+Type ArrayOrIntegerType() :
+{}
+{
+  <INT>
+  [<LBRACKET> <RBRACKET> { return new IntArrayType(); }]
+  { return new IntegerType(); }
+}
+
+
+Type BooleanType() :
+{}
+{
+  <BOOLEAN>
+  { return new BooleanType(); }
+}
+
+
+void VarDeclarationOrStatement(VarDeclList vl, StatementList stl) :
+{
+  Statement stmt;
+  Identifier id;
+  Type t;
+}
+{
+   (
+     t = ArrayOrIntegerType() |
+     t = BooleanType()
+   )
+   VarDeclarationTail(t, vl, stl)
+ |
+   (
+     stmt = Block() |
+     stmt = IfStatement() |
+     stmt = WhileStatement() |
+     stmt = PrintStatement()
+   )
+   { stl.addElement(stmt); }
+   Statements(stl)
+ |
+   id = Identifier() IdentifierDeclarationOrStatement(id, vl, stl)
+}
+
+
+void VarDeclarationTail(
+    Type t, VarDeclList vl, StatementList stl) :
+{
+  Identifier id;
+}
+{
+  id = Identifier() <SEMI> 
+  { vl.addElement(new VarDecl(t, id)); }
+  VarDeclarationOrStatement(vl, stl)
+}
+
+
+void IdentifierDeclarationOrStatement(
+    Identifier id1, VarDeclList vl, StatementList stl) :
+{
+  Identifier id2;
+  Statement stmt;
+}
+{
+   id2 = Identifier() <SEMI>
+   {
+     Type t = new IdentifierType(id1.toString());
+     vl.addElement(new VarDecl(t, id2));
+   }
+   VarDeclarationOrStatement(vl, stl)
+ |
+   stmt = IdentifierStatementTail(id1)
+   { stl.addElement(stmt); }
+   Statements(stl)
+}
+
+
+void Statements(StatementList stl) :
+{
+  Statement stmt;
+}
+{
+  (stmt = Statement() { stl.addElement(stmt); })*
+}
+
+
+Statement Statement() :
+{
+  Identifier id;
+  Statement stmt;
+}
+{
+   (
+     stmt = Block() |
+     stmt = IfStatement() |
+     stmt = WhileStatement() |
+     stmt = PrintStatement()
+   )
+   { return stmt; }
+ |
+   id = Identifier() stmt = IdentifierStatementTail(id)
+   { return stmt; }
+}
+
+
+Statement Block() :
+{
+  StatementList stmtL = new StatementList();
+}
+{
+  <LBRACE> Statements(stmtL) <RBRACE>
+  { return new Block(stmtL); }
+}
+
+
+Statement IfStatement() :
+{
+  Exp e;
+  Statement s1, s2;
+}
+{
+  <IF> <LPARENS> e = Expression() <RPARENS>
+    s1 = Statement()
+  <ELSE>
+    s2 = Statement()
+  { return new If(e, s1, s2); }
+}
+
+
+Statement WhileStatement() :
+{
+  Exp e;
+  Statement stmt;
+}
+{
+  <WHILE> <LPARENS> e = Expression() <RPARENS> stmt = Statement()
+  { return new While(e, stmt); }
+}
+
+
+Statement PrintStatement() :
+{
+  Exp e;
+}
+{
+  <PRINT> <LPARENS> e = Expression() <RPARENS> <SEMI>
+  { return new Print(e); }
+}
+
+
+Statement IdentifierStatementTail(Identifier id) :
+{
+  Exp e1, e2;
+}
+{
+    <LBRACKET> e1 = Expression() <RBRACKET>
+    <ASSIGN> e2 = Expression() <SEMI>
+    { return new ArrayAssign(id, e1, e2); }
+  |
+    <ASSIGN> e1 = Expression() <SEMI>
+    { return new Assign(id, e1); }
+}
+
+
+Exp Expression() :
+{
+  Exp e;
+}
+{
+  e = AndExpression()
+  { return e; }
+}
+
+
+Exp AndExpression() :
+{
+  Exp x, y;
+}
+{
+  x = LessThanExpression()
+  (
+    <AND> y = LessThanExpression()
+    { x = new And(x, y); }
+  )*
+  { return x; }
+}
+
+
+Exp LessThanExpression() :
+{
+  Exp x, y;
+}
+{
+  x = AdditiveExpression()
+  [
+    <LESS> y = AdditiveExpression()
+    { x = new LessThan(x, y); }
+  ]
+  { return x; }
+}
+
+
+Exp AdditiveExpression() :
+{
+  Exp x, y;
+}
+{
+  x = TimesExpression()
+  (
+      <ADD> y = TimesExpression() { x = new Plus(x, y); }
+    |
+      <SUB> y = TimesExpression() { x = new Minus(x, y); }
+  )*
+  { return x; }
+}
+
+
+Exp TimesExpression() :
+{
+  Exp x, y;
+}
+{
+  x = PrefixExpression()
+  (
+    <MULT> y = PrefixExpression()
+    { x = new Times(x, y); }
+  )*
+  { return x; }
+}
+
+
+Exp PrefixExpression() :
+{
+  Exp x;
+  int c = 0;
+}
+{
+  (<NOT> { ++c; })*
+  x = PostFixExpression()
+  { for (int i = 0; i < c; ++i) x = new Not(x); }
+  { return x; }
+}
+
+
+Exp PostFixExpression() :
+{
+  Exp e, pr;
+}
+{
+  pr = PrimaryExpression()
+  [
+     (e = ArrayLookup(pr) | e = ArrayLengthOrMethodCall(pr))
+     { return e; }
+  ]
+  { return pr; }
+}
+
+
+Exp ArrayLookup(Exp pr) :
+{
+  Exp e;
+}
+{
+  <LBRACKET> e = Expression() <RBRACKET>
+  { return new ArrayLookup(pr, e); }
+}
+
+
+Exp ArrayLengthOrMethodCall(Exp pr) :
+{
+  Exp e;
+}
+{
+  <DOT> e = ArrayLengthOrMethodCallTail(pr)
+  { return e; }
+}
+
+
+Exp ArrayLengthOrMethodCallTail(Exp pr) :
+{
+  Identifier id;
+  ExpList el = new ExpList();
+}
+{
+   <LENGTH>
+   { return new ArrayLength(pr); }
+ |
+   id = Identifier() <LPARENS> [ExpressionList(el)] <RPARENS>
+   { return new Call(pr, id, el); }
+}
+
+
+Exp PrimaryExpression() :
+{
+  Exp e;
+  Identifier id;
+}
+{
+   e = IntegerLiteral()
+   { return e; }
+ | <TRUE>
+   { return new True(); }
+ | <FALSE>
+   { return new False(); }
+ | id = Identifier()
+   { return new IdentifierExp(id.toString()); }
+ | <THIS>
+   { return new This(); }
+ | <LPARENS> e = Expression() <RPARENS>
+   { return e; }
+ | <NEW> e = ArrayOrObjectAllocation()
+   { return e; }
+}
+
+
+Exp ArrayOrObjectAllocation() :
+{
+  Identifier id;
+  Exp e;
+}
+{
+   <INT> <LBRACKET> e = Expression() <RBRACKET>
+   { return new NewArray(e); }
+ | id = Identifier() <LPARENS> <RPARENS>
+   { return new NewObject(id); }
+}
+
+
+void ExpressionList(ExpList el) :
+{
+  Exp e;
+}
+{
+  e = Expression()
+  { el.addElement(e); }
+  (
+    <COMMA> e = Expression()
+    { el.addElement(e); }
+  )*
+}
+
+
+Identifier Identifier() :
+{
+  Token t;
+}
+{
+  t = <ID> { return new Identifier(t.image); }
+}
+
+Exp IntegerLiteral() :
+{
+  Token t;
+  int num;
+}
+{
+  t = <NUM>
+  {
+    num = Integer.valueOf(t.image);
+    return new IntegerLiteral(num);
+  }
+}
