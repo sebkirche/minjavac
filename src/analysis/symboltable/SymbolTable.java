@@ -47,6 +47,7 @@ public class SymbolTable {
       c = getClass(c.parent());
     }
 
+    Thread.dumpStack();
     System.out.println("Variable " + varId + " not defined in current scope");
     System.exit(0);
     return null;
@@ -54,6 +55,7 @@ public class SymbolTable {
 
   public Method getMethod(String methodName, String className) {
     if (getClass(className) == null) {
+      Thread.dumpStack();
       System.out.println("Class " + className + " not defined");
       System.exit(0);
     }
@@ -69,6 +71,7 @@ public class SymbolTable {
       c = getClass(c.parent());
     }
 
+    Thread.dumpStack();
     System.out.println("Method " + methodName + " not defined in class " + className);
     System.exit(0);
     return null;
@@ -76,6 +79,7 @@ public class SymbolTable {
 
   public Type getMethodType(String methodName, String className) {
     if (getClass(className) == null) {
+      Thread.dumpStack();
       System.out.println("Class " + className + " not defined");
       System.exit(0);
     }
@@ -91,6 +95,7 @@ public class SymbolTable {
       c = getClass(c.parent());
     }
 
+    Thread.dumpStack();
     System.out.println("Method " + methodName + " not defined in class " + className);
     System.exit(0);
     return null;

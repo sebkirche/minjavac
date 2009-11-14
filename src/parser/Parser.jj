@@ -1,8 +1,9 @@
 PARSER_BEGIN(Parser)
 package parser;
 
-import analysis.visitors.*;
 import analysis.syntaxtree.*;
+import analysis.symboltable.*;
+import analysis.typechecker.*;
 
 public class Parser {
   public static void main(String args[]) throws Exception {
@@ -19,15 +20,24 @@ public class Parser {
       return;
     }
 
-    Program p = null ;
+    Program program = null ;
 
     try {
-      p = parser.Goal() ;
+      program = parser.Goal() ;
     }
     catch ( ParseException e ) {
       System.out.println( "Exiting." ) ;
       throw e ;
     }
+
+    SymbolTableBuilderVisitor symtBuilder = new SymbolTableBuilderVisitor();
+    SymbolTable symT = symtBuilder.getSymbolTable();
+    TypeCheckerVisitor typeChecker = new TypeCheckerVisitor(symT);
+
+    System.out.println("Symbol table builder: ");
+    program.accept(symtBuilder);
+    System.out.println("Type checker: ");
+    program.accept(typeChecker);
   }
 }
 PARSER_END(Parser)
@@ -606,7 +616,7 @@ Exp PrimaryExpression() :
  | <FALSE>
    { return new False(); }
  | id = Identifier()
-   { return new IdentifierExp(id.toString()); }
+   { return new Identifier(id); }
  | <THIS>
    { return new This(); }
  | <LPARENS> e = Expression() <RPARENS>
@@ -648,7 +658,7 @@ Identifier Identifier() :
   Token t;
 }
 {
-  t = <ID> { return new Identifier(t.image); }
+  t = <ID> { return new Identifier(t.image, t); }
 }
 
 Exp IntegerLiteral() :

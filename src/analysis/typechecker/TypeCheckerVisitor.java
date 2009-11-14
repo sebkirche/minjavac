@@ -17,6 +17,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
   private void error(Type expected, Type inferred) {
     System.out.println("Expected type " + expected + ", got " + inferred);
+    Thread.dumpStack();
     System.exit(1);
   }
 
@@ -363,7 +364,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     return boolT;
   }
 
-  public Type visit(Identifier n) {
-    return null;
+  public Type visit(Identifier id) {
+    return symbolTable.getVarType(currentMethod, currentClass, id.toString());
   }
 }

@@ -215,7 +215,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
 
   public void visit(Call callStmt) {
     callStmt.e.accept(this);
-    checkMethod(callStmt.i.toString());
+    //checkMethod(callStmt.i.toString());
 
     for (Exp expr : callStmt.el.getList())
       expr.accept(this);
