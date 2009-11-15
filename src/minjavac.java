@@ -34,8 +34,10 @@ public class minjavac {
 
     System.out.println("Building symbol table...");
     program.accept(symtBuilder);
+
     System.out.println("Typechecking...");
     program.accept(typeChecker);
+
     System.out.println("\nOk!");
   }
 }
