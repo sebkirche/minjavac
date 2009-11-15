@@ -36,6 +36,10 @@ public class TAModule {
     openProcedure.getParameters().add(new NormalVar(name));
   }
 
+  public void addLocalVar(String name) {
+    openProcedure.getLocals().add(new NormalVar(name));
+  }
+
   public void addInstruction(Instruction i) {
     if (i.isLabel()) {
       if (!openBasicBlock.instructions().isEmpty())

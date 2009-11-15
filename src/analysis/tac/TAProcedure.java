@@ -8,12 +8,13 @@ import analysis.tac.instructions.Label;
 public class TAProcedure {
   private Label name;
   private List<TABasicBlock> code;
-  private List<Variable> parameters;
+  private List<Variable> parameters, locals;
 
   public TAProcedure(String _name) {
     name = new Label(_name);
     code = new ArrayList<TABasicBlock>(20);
     parameters = new ArrayList<Variable>(10);
+    locals = new ArrayList<Variable>(20);
   }
 
   public Label getName() {
@@ -28,6 +29,10 @@ public class TAProcedure {
     return parameters;
   }
 
+  public List<Variable> getLocals() {
+    return locals;
+  }
+
   @Override
   public String toString() {
     String str = "procedure " + name + "(";
@@ -39,7 +44,14 @@ public class TAProcedure {
       str += v;
     }
 
-    str += "):";
+    str += "): ";
+
+    f = true;
+    for (Variable v : locals) {
+      if (f) f = false;
+      else str += ", ";
+      str += v;
+    }
 
     for (TABasicBlock b : code)
       str += "\n" + b;

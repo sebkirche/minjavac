@@ -117,7 +117,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
     for (Formal param : methodDecl.formalParamList.getList())
       param.accept(this);
 
-    for (VarDecl varDecl : methodDecl.fieldVarList.getList())
+    for (VarDecl varDecl : methodDecl.localVarList.getList())
       varDecl.accept(this);
 
     for (Statement stmt : methodDecl.statementList.getList())

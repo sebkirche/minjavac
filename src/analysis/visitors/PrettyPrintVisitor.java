@@ -105,9 +105,9 @@ public class PrettyPrintVisitor implements Visitor {
       }
     }
     System.out.println(") { ");
-    for (int i = 0; i < n.fieldVarList.size(); i++) {
+    for (int i = 0; i < n.localVarList.size(); i++) {
       System.out.print("    ");
-      n.fieldVarList.elementAt(i).accept(this);
+      n.localVarList.elementAt(i).accept(this);
       System.out.println("");
     }
     for (int i = 0; i < n.statementList.size(); i++) {
