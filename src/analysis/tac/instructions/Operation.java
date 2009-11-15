@@ -2,7 +2,7 @@ package analysis.tac.instructions;
 
 import analysis.symboltable.Variable;
 
-public class Operation implements Instruction {
+public class Operation extends Instruction {
   private Opcode op;
   private Variable dest, a, b;
 

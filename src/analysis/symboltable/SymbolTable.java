@@ -119,9 +119,9 @@ public class SymbolTable {
       IdentifierType i1 = (IdentifierType) t1;
       IdentifierType i2 = (IdentifierType) t2;
 
-      Class c = getClass(i2.s);
+      Class c = getClass(i2.className);
       while (c != null) {
-        if (i1.s.equals(c.getName()))
+        if (i1.className.equals(c.getName()))
           return true;
 
         if (c.parent() == null)

@@ -2,11 +2,11 @@ package analysis.tac.instructions;
 
 import analysis.symboltable.Variable;
 
-public class Call implements Instruction {
+public class ProcedureCall extends Instruction {
   private Variable dest;
   private Label procedure;
 
-  public Call(Variable _d, Label _proc) {
+  public ProcedureCall(Variable _d, Label _proc) {
     dest = _d;
     procedure = _proc;
   }

@@ -1,6 +1,6 @@
 package analysis.tac.variables;
 
-public class InstanceFieldVar implements Variable {
+public class InstanceFieldVar extends Variable {
   private Variable reference;
   private String field;
 

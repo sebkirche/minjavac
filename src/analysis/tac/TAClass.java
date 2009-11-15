@@ -1,8 +1,8 @@
 package analysis.tac;
 
-import analysis.symboltable.Variable;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import analysis.tac.variables.Variable;
 
 public class TAClass {
   private String name;

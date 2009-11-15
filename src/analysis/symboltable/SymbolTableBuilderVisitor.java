@@ -34,15 +34,15 @@ public class SymbolTableBuilderVisitor implements Visitor {
   }
 
   public void visit(Program p) {
-    p.m.accept(this);
+    p.mainC.accept(this);
 
-    for (ClassDecl classD : p.cl.getList())
+    for (ClassDecl classD : p.classList.getList())
       classD.accept(this);
   }
 
   public void visit(MainClass mainC) {
-    String name = mainC.i1.toString();
-    String param = mainC.i2.toString();
+    String name = mainC.classNameId.toString();
+    String param = mainC.argId.toString();
 
     symbolTable.addClass(name, null);
     currentClass = symbolTable.getClass(name);
@@ -51,88 +51,88 @@ public class SymbolTableBuilderVisitor implements Visitor {
     currentMethod = currentClass.getMethod("main");
     currentMethod.addParameter(param, new IdentifierType("String[]"));
 
-    mainC.s.accept(this);
+    mainC.mainStmt.accept(this);
 
     currentClass = null;
     currentMethod = null;
   }
 
   public void visit(ClassDeclSimple classDecl) {
-    String name = classDecl.i.toString();
+    String name = classDecl.classId.toString();
 
     if (!symbolTable.addClass(name, null))
-      error("Class", classDecl.i, "is already defined");
+      error("Class", classDecl.classId, "is already defined");
 
     currentClass = symbolTable.getClass(name);
 
-    for (VarDecl varD : classDecl.vl.getList())
+    for (VarDecl varD : classDecl.fieldVarList.getList())
       varD.accept(this);
     
-    for (MethodDecl methodD : classDecl.ml.getList())
+    for (MethodDecl methodD : classDecl.methodList.getList())
       methodD.accept(this);
 
     currentClass = null;
   }
 
   public void visit(ClassDeclExtends classDecl) {
-    String name = classDecl.i.toString();
-    String baseClass = classDecl.j.toString();
+    String name = classDecl.classId.toString();
+    String baseClass = classDecl.baseClassId.toString();
 
     if (!symbolTable.addClass(name, baseClass))
-      error("Class", classDecl.i, "is already defined");
+      error("Class", classDecl.classId, "is already defined");
 
     currentClass = symbolTable.getClass(name);
 
-    for (VarDecl varD : classDecl.vl.getList())
+    for (VarDecl varD : classDecl.fieldVarList.getList())
       varD.accept(this);
 
-    for (MethodDecl methodD : classDecl.ml.getList())
+    for (MethodDecl methodD : classDecl.methodList.getList())
       methodD.accept(this);
 
     currentClass = null;
   }
 
   public void visit(VarDecl varDecl) {
-    String varName = varDecl.i.toString();
-    Type varType = varDecl.t;
+    String varName = varDecl.varId.toString();
+    Type varT = varDecl.varType;
 
     if (currentMethod == null) {
-      if (!currentClass.addVar(varName, varType))
-        error("Variable", varDecl.i, " is already defined");
+      if (!currentClass.addVar(varName, varT))
+        error("Variable", varDecl.varId, " is already defined");
     } else {
-      if (!currentMethod.addLocalVar(varName, varType))
-        error("Variable", varDecl.i, " is already defined");
+      if (!currentMethod.addLocalVar(varName, varT))
+        error("Variable", varDecl.varId, " is already defined");
     }
   }
 
   public void visit(MethodDecl methodDecl) {
-    String methodName = methodDecl.i.toString();
-    Type returnType = methodDecl.t;
+    String methodName = methodDecl.methodNameId.toString();
+    Type returnType = methodDecl.methodReturnT;
 
     if (!currentClass.addMethod(methodName, returnType))
-      error("Method", methodDecl.i, "is already defined");
+      error("Method", methodDecl.methodNameId, "is already defined");
 
     currentMethod = currentClass.getMethod(methodName);
 
-    for (Formal param : methodDecl.fl.getList())
+    for (Formal param : methodDecl.formalParamList.getList())
       param.accept(this);
 
-    for (VarDecl varDecl : methodDecl.vl.getList())
+    for (VarDecl varDecl : methodDecl.fieldVarList.getList())
       varDecl.accept(this);
 
-    for (Statement stmt : methodDecl.sl.getList())
+    for (Statement stmt : methodDecl.statementList.getList())
       stmt.accept(this);
     
-    methodDecl.e.accept(this);
+    methodDecl.returnExpr.accept(this);
 
     currentMethod = null;
   }
 
   public void visit(Formal param) {
-    String name = param.i.toString();
+    String name = param.paramId.toString();
 
-    if (!currentMethod.addParameter(name, param.t))
-      error("Parameter", param.i, "is already defined");
+    if (!currentMethod.addParameter(name, param.paramType))
+      error("Parameter", param.paramId, "is already defined");
   }
 
   public void visit(IntArrayType n) {
@@ -149,34 +149,34 @@ public class SymbolTableBuilderVisitor implements Visitor {
   }
 
   public void visit(Block block) {
-    for (Statement stmt : block.sl.getList())
+    for (Statement stmt : block.stmtList.getList())
       stmt.accept(this);
   }
 
   public void visit(If ifStmt) {
-    ifStmt.e.accept(this);
-    ifStmt.s1.accept(this);
-    ifStmt.s2.accept(this);
+    ifStmt.boolExpr.accept(this);
+    ifStmt.trueStmt.accept(this);
+    ifStmt.falseStmt.accept(this);
   }
 
   public void visit(While whileStmt) {
-    whileStmt.e.accept(this);
-    whileStmt.s.accept(this);
+    whileStmt.booleanExpr.accept(this);
+    whileStmt.stmt.accept(this);
   }
 
   public void visit(Print printStmt) {
-    printStmt.e.accept(this);
+    printStmt.intExpr.accept(this);
   }
 
   public void visit(Assign assignStmt) {
-    checkVar(assignStmt.i.toString());
-    assignStmt.e.accept(this);
+    checkVar(assignStmt.varId.toString());
+    assignStmt.valueExpr.accept(this);
   }
 
   public void visit(ArrayAssign arrayAssign) {
-    checkVar(arrayAssign.i.toString());
-    arrayAssign.e1.accept(this);
-    arrayAssign.e2.accept(this);
+    checkVar(arrayAssign.arrayId.toString());
+    arrayAssign.indexExpr.accept(this);
+    arrayAssign.valueExpr.accept(this);
   }
 
   public void visit(And andExp) {
@@ -205,19 +205,19 @@ public class SymbolTableBuilderVisitor implements Visitor {
   }
 
   public void visit(ArrayLookup arrayLookup) {
-    arrayLookup.e1.accept(this);
-    arrayLookup.e2.accept(this);
+    arrayLookup.arrayExpr.accept(this);
+    arrayLookup.indexExpr.accept(this);
   }
 
   public void visit(ArrayLength arrayLength) {
-    arrayLength.e.accept(this);
+    arrayLength.arrayExpr.accept(this);
   }
 
   public void visit(Call callStmt) {
-    callStmt.e.accept(this);
+    callStmt.objectExpr.accept(this);
     //checkMethod(callStmt.i.toString());
 
-    for (Exp expr : callStmt.el.getList())
+    for (Exp expr : callStmt.paramExprList.getList())
       expr.accept(this);
   }
 
@@ -234,7 +234,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
   }
 
   public void visit(NewArray newArrayExp) {
-    newArrayExp.e.accept(this);
+    newArrayExp.sizeExpr.accept(this);
   }
 
   public void visit(NewObject newObjectExp) {
@@ -242,7 +242,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
   }
 
   public void visit(Not notExp) {
-    notExp.e.accept(this);
+    notExp.boolExpr.accept(this);
   }
 
   public void visit(Identifier varId) {

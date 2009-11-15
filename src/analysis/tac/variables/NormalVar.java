@@ -1,6 +1,6 @@
 package analysis.tac.variables;
 
-public class NormalVar implements Variable {
+public class NormalVar extends Variable {
   private String name;
 
   public NormalVar(String s) {

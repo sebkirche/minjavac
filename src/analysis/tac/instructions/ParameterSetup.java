@@ -2,7 +2,7 @@ package analysis.tac.instructions;
 
 import analysis.symboltable.Variable;
 
-public class ParameterSetup {
+public class ParameterSetup extends Instruction {
   private Variable parameter;
 
   public ParameterSetup(Variable v) {

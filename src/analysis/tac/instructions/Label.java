@@ -1,6 +1,6 @@
 package analysis.tac.instructions;
 
-public class Label {
+public class Label extends Instruction {
   private String label;
 
   public Label(String l) {

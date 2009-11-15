@@ -1,5 +1,5 @@
 package analysis.tac.variables;
 
-public interface Variable {
+public abstract class Variable {
 
 }

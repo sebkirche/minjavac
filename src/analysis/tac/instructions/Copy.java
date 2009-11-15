@@ -2,7 +2,7 @@ package analysis.tac.instructions;
 
 import analysis.symboltable.Variable;
 
-public class Copy {
+public class Copy extends Instruction {
   private Variable source, destiny;
 
   public Copy(Variable _x, Variable _y) {

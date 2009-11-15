@@ -1,6 +1,6 @@
 package analysis.tac.instructions;
 
-public class Jump {
+public class Jump extends Instruction {
   private Label target;
 
   public Jump(Label l) {
@@ -13,6 +13,6 @@ public class Jump {
 
   @Override
   public String toString() {
-    return target.toString();
+    return "goto " + target.toString();
   }
 }

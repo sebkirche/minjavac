@@ -2,7 +2,7 @@ package analysis.tac.instructions;
 
 import analysis.symboltable.Variable;
 
-public class Return {
+public class Return extends Instruction {
   private Variable v;
 
   public Return(Variable _v) {
