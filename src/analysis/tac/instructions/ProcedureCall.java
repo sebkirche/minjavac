@@ -1,6 +1,6 @@
 package analysis.tac.instructions;
 
-import analysis.symboltable.Variable;
+import analysis.tac.variables.Variable;
 
 public class ProcedureCall extends Instruction {
   private Variable dest;

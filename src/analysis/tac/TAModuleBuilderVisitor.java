@@ -254,49 +254,90 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(Call callStmt) {
+    Variable temp = NamePool.tempName("call");
+
+    callStmt.objectExpr.accept(this);
+    Variable objectRef = lastTemp;
+
+    module.addInstruction(new ParameterSetup(objectRef));
+
+    for (Exp param : callStmt.paramExprList.getList()) {
+      param.accept(this);
+      module.addInstruction(new ParameterSetup(lastTemp));
+    }
+
+    Label procLabel = new Label(callStmt.methodId.name);
+    module.addInstruction(new ProcedureCall(temp, procLabel));
+
+    lastTemp = temp;
+  }
+
+  public void visit(IntegerLiteral intLiteral) {
+    lastTemp = new ConstantVar(intLiteral.value);
+  }
+
+  public void visit(True t) {
+    lastTemp = new ConstantVar(1);
+  }
+
+  public void visit(False f) {
+    lastTemp = new ConstantVar(0);
+  }
+
+  public void visit(This thisExp) {
+    lastTemp = new NormalVar("this");
+  }
+
+  public void visit(NewArray newArray) {
+    Variable temp = NamePool.tempName("new_array");
     
+    newArray.sizeExpr.accept(this);
+    Variable size = lastTemp;
+
+    module.addInstruction(new Operation(
+     Opcode.NEW_ARRAY, temp, size
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(IntegerLiteral n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(NewObject newObj) {
+    Variable temp = NamePool.tempName("new_object");
+
+    module.addInstruction(new Operation(
+      Opcode.NEW_OBJECT, temp, new NormalVar(newObj.classNameId.name)
+    ));
+            
+    lastTemp = temp;
   }
 
-  public void visit(True n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Not notExp) {
+    Variable temp = NamePool.tempName("not");
+
+    notExp.boolExpr.accept(this);
+
+    module.addInstruction(new Operation(
+      Opcode.NOT, temp, lastTemp
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(False n) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public void visit(This n) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public void visit(NewArray n) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public void visit(NewObject n) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public void visit(Not n) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public void visit(Identifier n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Identifier varId) {
+    lastTemp = new NormalVar(varId.name);
   }
 
   private void evalBooleanJump(Exp e, Label trueL, Label falseL) {
     if (e instanceof False) {
       module.addInstruction(new Jump(falseL));
-    } else if (e instanceof True) {
+    }
+    else if (e instanceof True) {
       module.addInstruction(new Jump(trueL));
-    } else if (e instanceof Not) {
+    }
+    else if (e instanceof Not) {
       evalBooleanJump(((Not)e).boolExpr, falseL, trueL);
-    } else if (e instanceof And) {
+    }
+    else if (e instanceof And) {
       And andExpr = (And)e;
 
       Label cont = NamePool.labelName("and_cont");
@@ -304,7 +345,8 @@ public class TAModuleBuilderVisitor implements Visitor {
 
       module.addInstruction(cont);
       evalBooleanJump(andExpr.e2, trueL, falseL);
-    } else if (e instanceof LessThan) {
+    }
+    else if (e instanceof LessThan) {
       LessThan lessExpr = (LessThan)e;
 
       lessExpr.e1.accept(this);
@@ -318,8 +360,9 @@ public class TAModuleBuilderVisitor implements Visitor {
       ));
 
       module.addInstruction(new Jump(falseL));
-    } else {
-      e.accept(this);
+    }
+    else {
+      throw new IllegalArgumentException("evalBooleanJump");
     }
   }
 }
