@@ -1,16 +1,20 @@
 package analysis.tac;
 
+import java.util.List;
 import analysis.syntaxtree.*;
 import analysis.tac.variables.*;
 import analysis.tac.instructions.*;
 import analysis.visitors.Visitor;
+import analysis.symboltable.SymbolTable;
 
 public class TAModuleBuilderVisitor implements Visitor {
   private TAModule module;
   private Variable lastTemp;
+  private SymbolTable symbolTable;
  
-  public TAModuleBuilderVisitor() {
+  public TAModuleBuilderVisitor(SymbolTable symT) {
     lastTemp = null;
+    symbolTable = symT;
     module = new TAModule();
   }
 
@@ -202,7 +206,7 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(Minus minusExpr) {
-    Variable temp = NamePool.tempName("add"), a, b;
+    Variable temp = NamePool.tempName("sub"), a, b;
 
     minusExpr.e1.accept(this);
     a = lastTemp;
@@ -269,12 +273,19 @@ public class TAModuleBuilderVisitor implements Visitor {
 
     module.addInstruction(new ParameterSetup(objectRef));
 
-    for (Exp param : callStmt.paramExprList.getList()) {
-      param.accept(this);
+    List<Exp> params = callStmt.paramExprList.getList();
+    for (int i = params.size()-1; i >= 0; --i) {
+      params.get(i).accept(this);
       module.addInstruction(new ParameterSetup(lastTemp));
     }
 
-    Label procLabel = new Label(callStmt.methodId.name);
+    IdentifierType objType = (IdentifierType)callStmt.objectExpr.getType();
+    String objClassName = objType.className;
+    String methodName = callStmt.methodId.name;
+    String classN = symbolTable.getMethodClass(objClassName, methodName).getName();
+
+    Label procLabel = new Label(classN + "%" + methodName);
+    
     module.addInstruction(new ProcedureCall(temp, procLabel));
 
     lastTemp = temp;
@@ -365,6 +376,25 @@ public class TAModuleBuilderVisitor implements Visitor {
 
       module.addInstruction(new ConditionalJump(
         Condition.LESS_THAN, a, b, trueL
+      ));
+
+      module.addInstruction(new Jump(falseL));
+    }
+    else if (e instanceof Identifier) {
+      Variable boolVar = new NormalVar(((Identifier)e).name);
+
+      module.addInstruction(new ConditionalJump(
+        Condition.IS_TRUE, boolVar, null, trueL
+      ));
+
+      module.addInstruction(new Jump(falseL));
+    }
+    else if (e instanceof Call) {
+      e.accept(this);
+      Variable returnVar = lastTemp;
+      
+      module.addInstruction(new ConditionalJump(
+        Condition.IS_TRUE, returnVar, null, trueL
       ));
 
       module.addInstruction(new Jump(falseL));

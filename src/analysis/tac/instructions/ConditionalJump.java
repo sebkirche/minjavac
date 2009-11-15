@@ -27,9 +27,9 @@ public class ConditionalJump extends Jump {
 
   @Override
   public String toString() {
-    return String.format(
-      "if %s(%s, %s) goto %s",
-      cond, a, b, getTarget()
-    );
+    if (b != null)
+      return String.format("if %s(%s, %s) goto %s",cond, a, b, getTarget());
+    else
+      return String.format("if %s %s goto %s",cond, a, getTarget());
   }
 }

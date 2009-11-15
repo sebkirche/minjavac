@@ -208,6 +208,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(boolT, expB))
       error(boolT, expB);
 
+    andExp.setType(boolT);
     return boolT;
   }
 
@@ -222,7 +223,9 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(intT, expB))
       error(intT, expB);
 
-    return new BooleanType();
+    Type boolT = new BooleanType();
+    lessExp.setType(boolT);
+    return boolT;
   }
 
   public Type visit(Plus plusExp) {
@@ -236,6 +239,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(intT, expB))
       error(intT, expB);
 
+    plusExp.setType(intT);
     return intT;
   }
 
@@ -250,6 +254,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(intT, expB))
       error(intT, expB);
 
+    minusExp.setType(intT);
     return intT;
   }
 
@@ -264,6 +269,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(intT, expB))
       error(intT, expB);
 
+    timesExp.setType(intT);
     return intT;
   }
 
@@ -279,6 +285,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(intT, expInd))
       error(intT, expInd);
 
+    arrayLookup.setType(intT);
     return intT;
   }
 
@@ -289,7 +296,9 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(arrayT, expArr))
       error(arrayT, expArr);
 
-    return new IntegerType();
+    Type intT = new IntegerType();
+    arrayLength.setType(intT);
+    return intT;
   }
 
   public Type visit(Call callStmt) {
@@ -318,23 +327,31 @@ public class TypeCheckerVisitor implements TypeVisitor {
         error(paramT, expT);
     }
 
-    return method.getReturnType();
+    callStmt.setType(method.getReturnType());
+    return callStmt.getType();
   }
 
-  public Type visit(IntegerLiteral n) {
-    return new IntegerType();
+  public Type visit(IntegerLiteral intLit) {
+    Type intT = new IntegerType();
+    intLit.setType(intT);
+    return intT;
   }
 
-  public Type visit(True n) {
-    return new BooleanType();
+  public Type visit(True t) {
+    Type boolT = new BooleanType();
+    t.setType(boolT);
+    return boolT;
   }
 
-  public Type visit(False n) {
-    return new BooleanType();
+  public Type visit(False f) {
+    Type boolT = new BooleanType();
+    f.setType(boolT);
+    return boolT;
   }
 
-  public Type visit(This n) {
-    return currentClass.getType();
+  public Type visit(This t) {
+    t.setType(currentClass.getType());
+    return t.getType();
   }
 
   public Type visit(NewArray newArrayExp) {
@@ -344,12 +361,15 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(intT, expT))
       error(intT, expT);
 
-    return new IntArrayType();
+    Type arrType = new IntArrayType();
+    newArrayExp.setType(arrType);
+    return arrType;
   }
 
   public Type visit(NewObject newObjectExp) {
     Type identT = new IdentifierType(newObjectExp.classNameId.name);
     checkType(identT);
+    newObjectExp.setType(identT);
     return identT;
   }
 
@@ -359,11 +379,16 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
     if (!symbolTable.compareTypes(boolT, expT))
       error(boolT, expT);
-    
+
+    notExp.setType(boolT);
     return boolT;
   }
 
   public Type visit(Identifier id) {
-    return symbolTable.getVarType(currentMethod, currentClass, id.toString());
+    Type t = symbolTable.getVarType(
+      currentMethod, currentClass, id.toString()
+    );
+    id.setType(t);
+    return t;
   }
 }

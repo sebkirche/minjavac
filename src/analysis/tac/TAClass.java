@@ -35,7 +35,7 @@ public class TAClass {
       str += "\n" + v;
 
     for (TAProcedure p : procedures)
-      str += "\n" + p;
+      str += "\n\n" + p;
 
     str += "\nend";
     return str;

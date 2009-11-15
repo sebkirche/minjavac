@@ -12,7 +12,7 @@ public class Parser implements ParserConstants {
     cl = ClassDeclarationList();
     jj_consume_token(0);
    {if (true) return new Program(m, cl);}
-    throw new Error("Missing return statement in function");
+    throw new Error("Missing return statement in function"); 
   }
 
   static final public ClassDeclList ClassDeclarationList() throws ParseException {

@@ -33,8 +33,7 @@ public class minjavac {
     SymbolTable symT = symtBuilder.getSymbolTable();
 
     TypeCheckerVisitor typeChecker = new TypeCheckerVisitor(symT);
-    
-    TAModuleBuilderVisitor tacBuilder = new TAModuleBuilderVisitor();
+    TAModuleBuilderVisitor tacBuilder = new TAModuleBuilderVisitor(symT);
 
     System.out.println("Building symbol table...");
     program.accept(symtBuilder);

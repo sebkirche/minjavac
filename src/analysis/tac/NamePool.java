@@ -3,6 +3,8 @@ package analysis.tac;
 import analysis.tac.instructions.Label;
 import analysis.tac.variables.NormalVar;
 import analysis.tac.variables.Variable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NamePool {
   public static Label labelName(String s) {
@@ -14,20 +16,28 @@ public class NamePool {
   }
 
   public static String nextName(String s) {
-    return "." + s + "_" + nextCode();
+    return "." + s + nextCode(s);
   }
 
   public static void reset() {
-    count = 0;
+    counts.clear();
   }
 
-  private static String nextCode() {
-    String str = "";
+  private static String nextCode(String s) {
+    Integer i = counts.remove(s);
 
-    int n = count++;
+    if (i == null) {
+      counts.put(s, 1);
+      i = 0;
+    } else {
+      counts.put(s, i.intValue()+1);
+    }
+
+    String str = "_";
+    int n = i;
 
     if (n == 0)
-      return "A";
+      return "";
 
     while (n != 0) {
       str += table[n % 10];
@@ -37,8 +47,9 @@ public class NamePool {
     return str;
   }
 
-  private static int count = 0;
+  private static Map<String,Integer> counts =
+          new HashMap<String, Integer>(40);
   private static final char[] table = {
-    'A','B','C','D','E','F','G','H','I','J'
+    '0', 'A','B','C','D','E','F','G','H','I','J'
   };
 }
