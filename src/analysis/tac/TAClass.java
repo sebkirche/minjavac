@@ -40,4 +40,8 @@ public class TAClass {
     str += "\nend";
     return str;
   }
+
+  void accept(TAVisitor v) {
+    v.visit(this);
+  }
 }

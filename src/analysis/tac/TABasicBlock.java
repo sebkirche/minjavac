@@ -40,4 +40,8 @@ public class TABasicBlock {
 
     return str;
   }
+
+  void accept(TAVisitor v) {
+    v.visit(this);
+  }
 }

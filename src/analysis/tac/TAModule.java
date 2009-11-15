@@ -84,4 +84,8 @@ public class TAModule {
 
     return str.trim();
   }
+
+  void accept(TAVisitor v) {
+    v.visit(this);
+  }
 }

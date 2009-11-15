@@ -1,10 +1,18 @@
 package analysis.tac.instructions;
 
 public enum Opcode {
-  ADD("add"), SUB("sub"), MULT("mult"),
-  AND("and"), NOT("not"), IS_LESS("is_less"),
-  ARRAY_LENGTH("length"), NEW_ARRAY("new[]"),
-  NEW_OBJECT("new");
+  ADD("add"),
+  SUB("sub"),
+  MULT("mult"),
+  AND("and"),
+  NOT("not"),
+  IS_LESS("is_less"),
+  RETURN("return"),
+  ARRAY_LENGTH("length"),
+  NEW_ARRAY("new[]"),
+  NEW_OBJECT("new"),
+  SAVE_CTX("save_context"),
+  LOAD_CTX("load_context");
 
   private String op;
 

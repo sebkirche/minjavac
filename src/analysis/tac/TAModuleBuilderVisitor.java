@@ -271,6 +271,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     callStmt.objectExpr.accept(this);
     Variable objectRef = lastTemp;
 
+    module.addInstruction(new Action(Opcode.SAVE_CTX));
     module.addInstruction(new ParameterSetup(objectRef));
 
     List<Exp> params = callStmt.paramExprList.getList();
@@ -287,6 +288,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     Label procLabel = new Label(classN + "%" + methodName);
     
     module.addInstruction(new ProcedureCall(temp, procLabel));
+    module.addInstruction(new Action(Opcode.LOAD_CTX));
 
     lastTemp = temp;
   }
