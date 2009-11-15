@@ -4,11 +4,11 @@ import java.util.List;
 import analysis.tac.instructions.*;
 import java.util.ArrayList;
 
-public class BasicBlock {
+public class TABasicBlock {
   private List<Label> _labels;
   private List<Instruction> _instructions;
 
-  public BasicBlock() {
+  public TABasicBlock() {
     _labels = new ArrayList<Label>(7);
     _instructions = new ArrayList<Instruction>(20);
   }
