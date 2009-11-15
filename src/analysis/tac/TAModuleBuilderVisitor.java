@@ -4,17 +4,18 @@ import analysis.syntaxtree.*;
 import analysis.tac.variables.*;
 import analysis.tac.instructions.*;
 import analysis.visitors.Visitor;
-import analysis.symboltable.SymbolTable;
 
 public class TAModuleBuilderVisitor implements Visitor {
   private TAModule module;
   private Variable lastTemp;
-  private SymbolTable symbolTable;
  
-  public TAModuleBuilderVisitor(SymbolTable symT) {
+  public TAModuleBuilderVisitor() {
     lastTemp = null;
-    symbolTable = symT;
     module = new TAModule();
+  }
+
+  public TAModule getModule() {
+    return module;
   }
 
   public void visit(Program program) {
@@ -98,24 +99,31 @@ public class TAModuleBuilderVisitor implements Visitor {
   public void visit(If ifStmt) {
     Label trueL = NamePool.labelName("if_true");
     Label falseL = NamePool.labelName("if_false");
+    Label next = NamePool.labelName("if_next");
 
     evalBooleanJump(ifStmt.boolExpr, trueL, falseL);
 
     module.addInstruction(trueL);
     ifStmt.trueStmt.accept(this);
+    module.addInstruction(new Jump(next));
 
     module.addInstruction(falseL);
     ifStmt.falseStmt.accept(this);
+
+    module.addInstruction(next);
   }
 
   public void visit(While whileStmt) {
+    Label loop = NamePool.labelName("loop");
     Label trueL = NamePool.labelName("while_true");
     Label falseL = NamePool.labelName("while_false");
 
+    module.addInstruction(loop);
     evalBooleanJump(whileStmt.boolExpr, trueL, falseL);
 
     module.addInstruction(trueL);
     whileStmt.stmt.accept(this);
+    module.addInstruction(new Jump(loop));
 
     module.addInstruction(falseL);
   }
@@ -210,7 +218,7 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(Times timesExpr) {
-    Variable temp = NamePool.tempName("add"), a, b;
+    Variable temp = NamePool.tempName("mult"), a, b;
 
     timesExpr.e1.accept(this);
     a = lastTemp;
@@ -302,7 +310,7 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(NewObject newObj) {
-    Variable temp = NamePool.tempName("new_object");
+    Variable temp = NamePool.tempName("new_" + newObj.classNameId);
 
     module.addInstruction(new Operation(
       Opcode.NEW_OBJECT, temp, new NormalVar(newObj.classNameId.name)

@@ -80,8 +80,8 @@ public class TAModule {
     String str = "";
 
     for (TAClass c : classes)
-      str += "\n" + c;
+      str += "\n\n" + c;
 
-    return str;
+    return str.trim();
   }
 }

@@ -6,11 +6,15 @@ import analysis.tac.variables.Variable;
 
 public class NamePool {
   public static Label labelName(String s) {
-    return new Label("._" + s + "_" + nextCode());
+    return new Label(nextName(s));
   }
 
   public static Variable tempName(String s) {
-    return new NormalVar(".t_" + s + "_" + nextCode());
+    return new NormalVar(nextName(s));
+  }
+
+  public static String nextName(String s) {
+    return "." + s + "_" + nextCode();
   }
 
   public static void reset() {
@@ -33,7 +37,7 @@ public class NamePool {
     return str;
   }
 
-  private static int count = 10;
+  private static int count = 0;
   private static final char[] table = {
     'A','B','C','D','E','F','G','H','I','J'
   };

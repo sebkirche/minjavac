@@ -53,8 +53,12 @@ public class TAProcedure {
       str += v;
     }
 
-    for (TABasicBlock b : code)
-      str += "\n" + b;
+    f = true;
+    for (TABasicBlock b : code) {
+      if (f) { f = false; str += "\n"; }
+      else { str += "\n\n"; }
+      str += b;
+    }
 
     str += "\nend";
     return str;

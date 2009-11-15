@@ -26,15 +26,17 @@ public class TABasicBlock {
     String str = "";
 
     for (Label l : labels())
-      str += l;
+      str += " " + l + ":\n";
 
     for (Instruction i : instructions())
-      str += "\t" + i + ";\n";
+      str += "    " + i + ";\n";
 
     str = str.trim();
 
-    if (labels().isEmpty())
-      str = "\t" + str;
+    if (!labels().isEmpty())
+      str = " " + str;
+    else
+      str = "    " + str;
 
     return str;
   }

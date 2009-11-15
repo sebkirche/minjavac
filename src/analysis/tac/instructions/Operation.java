@@ -35,6 +35,9 @@ public class Operation extends Instruction {
 
   @Override
   public String toString() {
-    return String.format("%s := %s %s, %s", dest, op, a, b);
+    if (b != null)
+      return String.format("%s := %s %s, %s", dest, op, a, b);
+    else
+      return String.format("%s := %s %s", dest, op ,a);
   }
 }

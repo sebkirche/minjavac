@@ -1,6 +1,7 @@
 import parser.*;
 import analysis.syntaxtree.*;
 import analysis.symboltable.*;
+import analysis.tac.TAModuleBuilderVisitor;
 import analysis.typechecker.*;
 
 public class minjavac {
@@ -30,13 +31,22 @@ public class minjavac {
 
     SymbolTableBuilderVisitor symtBuilder = new SymbolTableBuilderVisitor();
     SymbolTable symT = symtBuilder.getSymbolTable();
+
     TypeCheckerVisitor typeChecker = new TypeCheckerVisitor(symT);
+    
+    TAModuleBuilderVisitor tacBuilder = new TAModuleBuilderVisitor();
 
     System.out.println("Building symbol table...");
     program.accept(symtBuilder);
 
     System.out.println("Typechecking...");
     program.accept(typeChecker);
+
+    System.out.println("Building IR...");
+    program.accept(tacBuilder);
+
+    System.out.println("IR:");
+    System.out.println("\n" + tacBuilder.getModule());
 
     System.out.println("\nOk!");
   }
