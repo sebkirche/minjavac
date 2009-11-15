@@ -9,8 +9,8 @@ public class TypeCheckerVisitor implements TypeVisitor {
   private analysis.symboltable.Class currentClass;
   private analysis.symboltable.Method currentMethod;
 
-  public TypeCheckerVisitor(SymbolTable symT) { 
-    symbolTable = symT;
+  public TypeCheckerVisitor() { 
+    symbolTable = SymbolTable.getInstance();
     currentClass = null; 
     currentMethod = null;
   }

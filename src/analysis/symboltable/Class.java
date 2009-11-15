@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.HashMap;
 import analysis.syntaxtree.Type;
 import analysis.syntaxtree.IdentifierType;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class Class {
@@ -54,6 +56,18 @@ public class Class {
 
     variableMap.put(varName, new Variable(varName, varType));
     return true;
+  }
+
+  public List<String> getVariables() {
+    SymbolTable symT = SymbolTable.getInstance();
+    LinkedList<String> vars = new LinkedList<String>();
+
+    if (baseClass != null) {
+      vars.addAll(symT.getClass(baseClass).getVariables());
+    }
+
+    vars.addAll(variableMap.keySet());
+    return vars;
   }
 
   public Variable getVar(String varName) {

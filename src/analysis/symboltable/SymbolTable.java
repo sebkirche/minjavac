@@ -1,5 +1,7 @@
 package analysis.symboltable;
 
+import java.util.Set;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import analysis.syntaxtree.*;
@@ -24,6 +26,10 @@ public class SymbolTable {
       return classMap.get(id);
 
     return null;
+  }
+
+  public Set<String> getClasses() {
+    return classMap.keySet();
   }
 
   public boolean containsClass(String id) {
@@ -138,5 +144,15 @@ public class SymbolTable {
       }
     }
     return false;
+  }
+
+  private static SymbolTable instance = null;
+
+  public static void setInstance(SymbolTable symT) {
+    instance = symT;
+  }
+
+  public static SymbolTable getInstance() {
+    return instance;
   }
 }

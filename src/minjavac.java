@@ -15,7 +15,9 @@ public class minjavac {
       parser = new Parser(System.in);
     }
     else {
-      System.out.println("Usage: Parser < input filename or Parser input filename.");
+      System.out.println(
+        "Usage: Parser < input filename or Parser input filename."
+      );
       return;
     }
 
@@ -25,15 +27,14 @@ public class minjavac {
       program = parser.Goal();
     }
     catch (ParseException e) {
-      System.out.println("Exiting.");
-      throw e;
+      System.out.println(e.getMessage());
     }
 
     SymbolTableBuilderVisitor symtBuilder = new SymbolTableBuilderVisitor();
-    SymbolTable symT = symtBuilder.getSymbolTable();
+    SymbolTable.setInstance(symtBuilder.getSymbolTable());
 
-    TypeCheckerVisitor typeChecker = new TypeCheckerVisitor(symT);
-    TAModuleBuilderVisitor tacBuilder = new TAModuleBuilderVisitor(symT);
+    TypeCheckerVisitor typeChecker = new TypeCheckerVisitor();
+    TAModuleBuilderVisitor tacBuilder = new TAModuleBuilderVisitor();
 
     System.out.println("Building symbol table...");
     program.accept(symtBuilder);

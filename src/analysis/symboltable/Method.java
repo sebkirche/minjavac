@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import analysis.syntaxtree.Type;
+import java.util.Set;
 
 public class Method {
   String name;
@@ -68,6 +69,10 @@ public class Method {
     }
 
     return false;
+  }
+
+  public Set<String> getLocalVars() {
+    return localVarMap.keySet();
   }
 
   public Variable getLocalVar(String varName) {

@@ -12,9 +12,9 @@ public class TAModuleBuilderVisitor implements Visitor {
   private Variable lastTemp;
   private SymbolTable symbolTable;
  
-  public TAModuleBuilderVisitor(SymbolTable symT) {
+  public TAModuleBuilderVisitor() {
     lastTemp = null;
-    symbolTable = symT;
+    symbolTable = SymbolTable.getInstance();
     module = new TAModule();
   }
 
