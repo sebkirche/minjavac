@@ -176,7 +176,7 @@ public class PrettyPrintVisitor implements Visitor {
   // Statement s;
   public void visit(While n) {
     System.out.print("while (");
-    n.booleanExpr.accept(this);
+    n.boolExpr.accept(this);
     System.out.print(") ");
     n.stmt.accept(this);
   }

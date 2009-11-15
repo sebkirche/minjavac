@@ -1,12 +1,20 @@
 package analysis.tac;
 
+import analysis.tac.instructions.Label;
+import analysis.tac.variables.NormalVar;
+import analysis.tac.variables.Variable;
+
 public class NamePool {
-  public static String getLabelName() {
-    return ".label_" + nextCode();
+  public static Label labelName(String s) {
+    return new Label("._" + s + "_" + nextCode());
   }
 
-  public static String getTempVarName() {
-    return ".t_" + nextCode();
+  public static Variable tempName(String s) {
+    return new NormalVar(".t_" + s + "_" + nextCode());
+  }
+
+  public static void reset() {
+    count = 0;
   }
 
   private static String nextCode() {
@@ -24,7 +32,6 @@ public class NamePool {
 
     return str;
   }
-
 
   private static int count = 10;
   private static final char[] table = {

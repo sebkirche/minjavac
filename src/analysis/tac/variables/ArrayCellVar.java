@@ -1,9 +1,9 @@
 package analysis.tac.variables;
 
-public class ArrayFieldVar extends Variable {
+public class ArrayCellVar extends Variable {
   private Variable array, index;
 
-  public ArrayFieldVar(Variable a, Variable i) {
+  public ArrayCellVar(Variable a, Variable i) {
     array = a;
     index = i;
   }

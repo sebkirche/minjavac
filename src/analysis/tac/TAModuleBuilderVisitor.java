@@ -71,6 +71,7 @@ public class TAModuleBuilderVisitor implements Visitor {
   public void visit(IdentifierType n) { }
 
   public void visit(MethodDecl methodD) {
+    NamePool.reset();
     module.startProcedure(methodD.methodNameId.name);
 
     for (Formal p : methodD.formalParamList.getList())
@@ -95,57 +96,165 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(If ifStmt) {
-    Label trueLabel = new Label(NamePool.getLabelName());
-    Label falseLabel = new Label(NamePool.getLabelName());
+    Label trueL = NamePool.labelName("if_true");
+    Label falseL = NamePool.labelName("if_false");
 
+    evalBooleanJump(ifStmt.boolExpr, trueL, falseL);
+
+    module.addInstruction(trueL);
+    ifStmt.trueStmt.accept(this);
+
+    module.addInstruction(falseL);
+    ifStmt.falseStmt.accept(this);
   }
 
-  public void visit(While n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(While whileStmt) {
+    Label trueL = NamePool.labelName("while_true");
+    Label falseL = NamePool.labelName("while_false");
+
+    evalBooleanJump(whileStmt.boolExpr, trueL, falseL);
+
+    module.addInstruction(trueL);
+    whileStmt.stmt.accept(this);
+
+    module.addInstruction(falseL);
   }
 
-  public void visit(Print n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Print printStmt) {
+    printStmt.intExpr.accept(this);
+    module.addInstruction(new PrintInstruction(lastTemp));
   }
 
-  public void visit(Assign n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Assign assignStmt) {
+    assignStmt.valueExpr.accept(this);
+
+    Variable destiny = new NormalVar(assignStmt.varId.name);
+    module.addInstruction(new Copy(destiny, lastTemp));
   }
 
-  public void visit(ArrayAssign n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(ArrayAssign arrayAssign) {
+    Variable arrayVar = new NormalVar(arrayAssign.arrayId.name);
+
+    arrayAssign.indexExpr.accept(this);
+    Variable indexVar = lastTemp;
+
+    arrayAssign.valueExpr.accept(this);
+    Variable valueVar = lastTemp;
+
+    ArrayCellVar dest = new ArrayCellVar(arrayVar, indexVar);
+    module.addInstruction(new Copy(dest, valueVar));
   }
 
-  public void visit(And n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(And andExpr) {
+    Variable temp = NamePool.tempName("and"), a, b;
+
+    andExpr.e1.accept(this);
+    a = lastTemp;
+
+    andExpr.e2.accept(this);
+    b = lastTemp;
+
+    module.addInstruction(new Operation(
+      Opcode.AND, temp, a, b
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(LessThan n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(LessThan lessExpr) {
+    Variable temp = NamePool.tempName("less_than"), a, b;
+
+    lessExpr.e1.accept(this);
+    a = lastTemp;
+
+    lessExpr.e2.accept(this);
+    b = lastTemp;
+
+    module.addInstruction(new Operation(
+      Opcode.IS_LESS, temp, a, b
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(Plus n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Plus plusExpr) {
+    Variable temp = NamePool.tempName("add"), a, b;
+
+    plusExpr.e1.accept(this);
+    a = lastTemp;
+
+    plusExpr.e2.accept(this);
+    b = lastTemp;
+
+    module.addInstruction(new Operation(
+      Opcode.ADD, temp, a, b
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(Minus n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Minus minusExpr) {
+    Variable temp = NamePool.tempName("add"), a, b;
+
+    minusExpr.e1.accept(this);
+    a = lastTemp;
+
+    minusExpr.e2.accept(this);
+    b = lastTemp;
+
+    module.addInstruction(new Operation(
+      Opcode.SUB, temp, a, b
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(Times n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Times timesExpr) {
+    Variable temp = NamePool.tempName("add"), a, b;
+
+    timesExpr.e1.accept(this);
+    a = lastTemp;
+
+    timesExpr.e2.accept(this);
+    b = lastTemp;
+
+    module.addInstruction(new Operation(
+      Opcode.MULT, temp, a, b
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(ArrayLookup n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(ArrayLookup lookup) {
+    Variable temp = NamePool.tempName("array_lookup");
+
+    lookup.indexExpr.accept(this);
+    Variable index = lastTemp;
+
+    lookup.arrayExpr.accept(this);
+    Variable array = lastTemp;
+
+    ArrayCellVar cell = new ArrayCellVar(array, index);
+
+    module.addInstruction(new Copy(temp, cell));
+    lastTemp = temp;
   }
 
-  public void visit(ArrayLength n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(ArrayLength length) {
+    Variable temp = NamePool.tempName("array_length");
+
+    length.arrayExpr.accept(this);
+    Variable arrayVar = lastTemp;
+
+    module.addInstruction(new Operation(
+      Opcode.ARRAY_LENGTH, temp, arrayVar
+    ));
+
+    lastTemp = temp;
   }
 
-  public void visit(Call n) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Call callStmt) {
+    
   }
 
   public void visit(IntegerLiteral n) {
@@ -180,4 +289,37 @@ public class TAModuleBuilderVisitor implements Visitor {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  private void evalBooleanJump(Exp e, Label trueL, Label falseL) {
+    if (e instanceof False) {
+      module.addInstruction(new Jump(falseL));
+    } else if (e instanceof True) {
+      module.addInstruction(new Jump(trueL));
+    } else if (e instanceof Not) {
+      evalBooleanJump(((Not)e).boolExpr, falseL, trueL);
+    } else if (e instanceof And) {
+      And andExpr = (And)e;
+
+      Label cont = NamePool.labelName("and_cont");
+      evalBooleanJump(andExpr.e1, cont, falseL);
+
+      module.addInstruction(cont);
+      evalBooleanJump(andExpr.e2, trueL, falseL);
+    } else if (e instanceof LessThan) {
+      LessThan lessExpr = (LessThan)e;
+
+      lessExpr.e1.accept(this);
+      Variable a = lastTemp;
+
+      lessExpr.e2.accept(this);
+      Variable b = lastTemp;
+
+      module.addInstruction(new ConditionalJump(
+        Condition.LESS_THAN, a, b, trueL
+      ));
+
+      module.addInstruction(new Jump(falseL));
+    } else {
+      e.accept(this);
+    }
+  }
 }

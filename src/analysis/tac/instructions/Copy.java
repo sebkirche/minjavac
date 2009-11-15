@@ -1,6 +1,6 @@
 package analysis.tac.instructions;
 
-import analysis.symboltable.Variable;
+import analysis.tac.variables.Variable;
 
 public class Copy extends Instruction {
   private Variable source, destiny;

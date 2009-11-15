@@ -153,7 +153,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
   }
 
   public Type visit(While whileStmt) {
-    Type expT = whileStmt.booleanExpr.accept(this);
+    Type expT = whileStmt.boolExpr.accept(this);
     Type booleanT = new BooleanType();
 
     if (!symbolTable.compareTypes(booleanT, expT))

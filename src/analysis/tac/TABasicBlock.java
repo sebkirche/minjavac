@@ -29,7 +29,7 @@ public class TABasicBlock {
       str += l;
 
     for (Instruction i : instructions())
-      str += "\t" + i + "\n";
+      str += "\t" + i + ";\n";
 
     str = str.trim();
 

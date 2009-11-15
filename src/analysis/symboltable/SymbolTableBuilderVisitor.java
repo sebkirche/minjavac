@@ -160,7 +160,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
   }
 
   public void visit(While whileStmt) {
-    whileStmt.booleanExpr.accept(this);
+    whileStmt.boolExpr.accept(this);
     whileStmt.stmt.accept(this);
   }
 
