@@ -1,11 +1,13 @@
 package analysis.tac.instructions;
 
+import analysis.tac.TABasicBlockVisitor;
 import java.util.Set;
 import java.util.HashSet;
+import analysis.tac.variables.TALocalVar;
 
 public abstract class TAInstruction {
   public TAInstruction() {
-    deadVars = new HashSet<String>(20);
+    deadVars = new HashSet<TALocalVar>(20);
   }
 
   public boolean isLabel() {
@@ -24,13 +26,15 @@ public abstract class TAInstruction {
     return this instanceof ConditionalJump;
   }
 
-  public void addDeadVar(String var) {
+  public abstract void accept(TABasicBlockVisitor v);
+
+  public void addDeadVar(TALocalVar var) {
     deadVars.add(var);
   }
 
-  public Set<String> deadVars() {
+  public Set<TALocalVar> deadVars() {
     return deadVars;
   }
 
-  private Set<String> deadVars;
+  private Set<TALocalVar> deadVars;
 }

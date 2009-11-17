@@ -1,13 +1,13 @@
 package analysis.tac;
 
 import analysis.symboltable.ClassDescriptor;
-import analysis.symboltable.MethodDescriptor;
 import java.util.List;
 import analysis.syntaxtree.*;
 import analysis.tac.variables.*;
 import analysis.tac.instructions.*;
 import analysis.visitors.Visitor;
 import analysis.symboltable.SymbolTable;
+import analysis.symboltable.MethodDescriptor;
 
 public class TAModuleBuilderVisitor implements Visitor {
   private TAModule module;
@@ -78,9 +78,9 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(If ifStmt) {
-    Label trueL = NamePool.labelName("if_true");
-    Label falseL = NamePool.labelName("if_false");
-    Label next = NamePool.labelName("if_next");
+    Label trueL = NamePool.newLabel("if_true");
+    Label falseL = NamePool.newLabel("if_false");
+    Label next = NamePool.newLabel("if_next");
 
     evalBooleanJump(ifStmt.boolExpr, trueL, falseL);
 
@@ -95,9 +95,9 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(While whileStmt) {
-    Label loop = NamePool.labelName("loop");
-    Label trueL = NamePool.labelName("while_true");
-    Label falseL = NamePool.labelName("while_false");
+    Label loop = NamePool.newLabel("loop");
+    Label trueL = NamePool.newLabel("while_true");
+    Label falseL = NamePool.newLabel("while_false");
 
     module.addInstruction(loop);
     evalBooleanJump(whileStmt.boolExpr, trueL, falseL);
@@ -117,12 +117,12 @@ public class TAModuleBuilderVisitor implements Visitor {
   public void visit(Assign assignStmt) {
     assignStmt.valueExpr.accept(this);
 
-    TAVariable destiny = new TANormalVar(assignStmt.varId.name);
+    TAVariable destiny = getTAVariable(assignStmt.varId.name);
     module.addInstruction(new Copy(destiny, lastTemp));
   }
 
   public void visit(ArrayAssign arrayAssign) {
-    TAVariable arrayVar = new TANormalVar(arrayAssign.arrayId.name);
+    TAVariable arrayVar = getTAVariable(arrayAssign.arrayId.name);
 
     arrayAssign.indexExpr.accept(this);
     TAVariable indexVar = lastTemp;
@@ -136,7 +136,7 @@ public class TAModuleBuilderVisitor implements Visitor {
 
   public void visit(And andExpr) {
     TAVariable a, b;
-    TAVariable temp = NamePool.tempName("and", BooleanType.instance());
+    TAVariable temp = NamePool.newVar("and", BooleanType.instance());
 
     andExpr.e1.accept(this);
     a = lastTemp;
@@ -153,7 +153,7 @@ public class TAModuleBuilderVisitor implements Visitor {
 
   public void visit(LessThan lessExpr) {
     TAVariable a, b;
-    TAVariable temp = NamePool.tempName("less_than", BooleanType.instance());
+    TAVariable temp = NamePool.newVar("less_than", BooleanType.instance());
 
     lessExpr.e1.accept(this);
     a = lastTemp;
@@ -170,7 +170,7 @@ public class TAModuleBuilderVisitor implements Visitor {
 
   public void visit(Plus plusExpr) {
     TAVariable a, b;
-    TAVariable temp = NamePool.tempName("add", IntegerType.instance());
+    TAVariable temp = NamePool.newVar("add", IntegerType.instance());
 
     plusExpr.e1.accept(this);
     a = lastTemp;
@@ -187,7 +187,7 @@ public class TAModuleBuilderVisitor implements Visitor {
 
   public void visit(Minus minusExpr) {
     TAVariable a, b;
-    TAVariable temp = NamePool.tempName("sub", IntegerType.instance());
+    TAVariable temp = NamePool.newVar("sub", IntegerType.instance());
 
     minusExpr.e1.accept(this);
     a = lastTemp;
@@ -204,7 +204,7 @@ public class TAModuleBuilderVisitor implements Visitor {
 
   public void visit(Times timesExpr) {
     TAVariable a, b;
-    TAVariable temp = NamePool.tempName("mult", IntegerType.instance());
+    TAVariable temp = NamePool.newVar("mult", IntegerType.instance());
 
     timesExpr.e1.accept(this);
     a = lastTemp;
@@ -220,7 +220,7 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(ArrayLookup lookup) {
-    TAVariable temp = NamePool.tempName("array_lookup", IntegerType.instance());
+    TAVariable temp = NamePool.newVar("array_lookup", IntegerType.instance());
 
     lookup.indexExpr.accept(this);
     TAVariable index = lastTemp;
@@ -235,7 +235,7 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(ArrayLength length) {
-    TAVariable temp = NamePool.tempName("array_length", IntegerType.instance());
+    TAVariable temp = NamePool.newVar("array_length", IntegerType.instance());
 
     length.arrayExpr.accept(this);
     TAVariable arrayVar = lastTemp;
@@ -268,7 +268,7 @@ public class TAModuleBuilderVisitor implements Visitor {
 
     Label procLabel = new Label(methodClassN + "::" + methodN);
     
-    TAVariable temp = NamePool.tempName("call", methodD.getReturnType());
+    TAVariable temp = NamePool.newVar("call", methodD.getReturnType());
     module.addInstruction(new ProcedureCall(temp, procLabel));
     module.addInstruction(new Action(Opcode.LOAD_CTX));
 
@@ -288,11 +288,11 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(This thisExp) {
-    lastTemp = new TANormalVar("this");
+    lastTemp = new TAThisVar();
   }
 
   public void visit(NewArray newArray) {
-    TAVariable temp = NamePool.tempName("new_array", IntArrayType.instance());
+    TAVariable temp = NamePool.newVar("new_array", IntArrayType.instance());
     
     newArray.sizeExpr.accept(this);
     TAVariable size = lastTemp;
@@ -307,17 +307,17 @@ public class TAModuleBuilderVisitor implements Visitor {
   public void visit(NewObject newObj) {
     String classN = newObj.classNameId.name;
     Type tempT = new IdentifierType(classN);
-    TAVariable temp = NamePool.tempName("new_" + newObj.classNameId, tempT);
+    TAVariable temp = NamePool.newVar("new_" + newObj.classNameId, tempT);
 
     module.addInstruction(new Operation(
-      Opcode.NEW_OBJECT, temp, new TANormalVar(newObj.classNameId.name)
+      Opcode.NEW_OBJECT, temp, new TAOtherVar(newObj.classNameId.name)
     ));
             
     lastTemp = temp;
   }
 
   public void visit(Not notExp) {
-    TAVariable temp = NamePool.tempName("not", BooleanType.instance());
+    TAVariable temp = NamePool.newVar("not", BooleanType.instance());
 
     notExp.boolExpr.accept(this);
 
@@ -329,7 +329,7 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(Identifier varId) {
-    lastTemp = new TANormalVar(varId.name);
+    lastTemp = getTAVariable(varId.name);
   }
 
   private void evalBooleanJump(Exp e, Label trueL, Label falseL) {
@@ -345,7 +345,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     else if (e instanceof And) {
       And andExpr = (And)e;
 
-      Label cont = NamePool.labelName("and_cont");
+      Label cont = NamePool.newLabel("and_cont");
       evalBooleanJump(andExpr.e1, cont, falseL);
 
       module.addInstruction(cont);
@@ -367,7 +367,7 @@ public class TAModuleBuilderVisitor implements Visitor {
       module.addInstruction(new Jump(falseL));
     }
     else if (e instanceof Identifier) {
-      TAVariable boolVar = new TANormalVar(((Identifier)e).name);
+      TAVariable boolVar = getTAVariable(((Identifier)e).name);
 
       module.addInstruction(new ConditionalJump(
         Condition.IS_TRUE, boolVar, null, trueL
@@ -412,5 +412,15 @@ public class TAModuleBuilderVisitor implements Visitor {
 
   public void visit(IdentifierType n) {
     throw new IllegalArgumentException("visit::IdentifierType");
+  }
+
+  private TAVariable getTAVariable(String name) {
+    TAClass c = module.getOpenClass();
+    ClassDescriptor cd = symbolTable.getClass(c.getName());
+    
+    if (cd.isInScope(name))
+      return new TAFieldVar(name);
+    else
+      return new TALocalVar(name);
   }
 }

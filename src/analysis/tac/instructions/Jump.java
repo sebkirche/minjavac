@@ -1,5 +1,7 @@
 package analysis.tac.instructions;
 
+import analysis.tac.TABasicBlockVisitor;
+
 public class Jump extends TAInstruction {
   private Label target;
 
@@ -18,5 +20,10 @@ public class Jump extends TAInstruction {
   @Override
   public String toString() {
     return "goto " + target.toString();
+  }
+
+  @Override
+  public void accept(TABasicBlockVisitor v) {
+    v.visit(this);
   }
 }

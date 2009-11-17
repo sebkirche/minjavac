@@ -47,4 +47,8 @@ public class TABasicBlock {
 
     return str;
   }
+
+  public void accept(TABasicBlockVisitor v) {
+    v.visit(this);
+  }
 }

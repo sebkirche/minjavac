@@ -1,5 +1,7 @@
 package analysis.tac.instructions;
 
+import analysis.tac.TABasicBlockVisitor;
+
 public class Label extends TAInstruction {
   private String label;
 
@@ -19,5 +21,10 @@ public class Label extends TAInstruction {
   @Override
   public String toString() {
     return label;
+  }
+
+  @Override
+  public void accept(TABasicBlockVisitor v) {
+    v.visit(this);
   }
 }

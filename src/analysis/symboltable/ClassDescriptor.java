@@ -90,6 +90,21 @@ public class ClassDescriptor {
     return variableMap.containsKey(varName);
   }
 
+  public boolean isInScope(String varName) {
+    ClassDescriptor c = this;
+
+    while (c != null) {
+      if (c.getVar(varName) != null)
+        return true;
+      else if (c.parent() == null)
+        break;
+
+      c = SymbolTable.getInstance().getClass(c.parent());
+    }
+
+    return false;
+  }
+
   public boolean containsMethod(String methodName) {
     return methodMap.containsKey(methodName);
   }

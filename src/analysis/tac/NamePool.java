@@ -4,17 +4,17 @@ import java.util.Map;
 import java.util.HashMap;
 import analysis.syntaxtree.Type;
 import analysis.tac.instructions.Label;
-import analysis.tac.variables.TANormalVar;
+import analysis.tac.variables.TALocalVar;
 import analysis.tac.variables.TAVariable;
 
 public class NamePool {
-  public static Label labelName(String s) {
+  public static Label newLabel(String s) {
     return new Label(nextName(s));
   }
 
-  public static TAVariable tempName(String s, Type t) {
+  public static TAVariable newVar(String s, Type t) {
     TAModule.getInstance().addTemporaryVar(s, t);
-    return new TANormalVar(nextName(s));
+    return new TALocalVar(nextName(s));
   }
 
   public static String nextName(String s) {

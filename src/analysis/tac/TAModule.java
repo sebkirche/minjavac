@@ -20,6 +20,10 @@ public class TAModule {
     openProcedure = null;
   }
 
+  public TAClass getOpenClass() {
+    return openClass;
+  }
+
   public void startClass(String name) {
     openClass = new TAClass(name); 
   }

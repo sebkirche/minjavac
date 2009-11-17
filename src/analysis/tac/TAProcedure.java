@@ -33,9 +33,6 @@ public class TAProcedure {
   public String toString() {
     String str = "procedure " + label;
 
-    for (List<Integer> l : graph)
-      str += "\n" + l.toString();
-
     boolean f = true;
     for (TABasicBlock b : code) {
       if (f) { f = false; str += "\n"; }

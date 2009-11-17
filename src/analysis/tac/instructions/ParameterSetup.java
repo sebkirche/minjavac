@@ -1,5 +1,6 @@
 package analysis.tac.instructions;
 
+import analysis.tac.TABasicBlockVisitor;
 import analysis.tac.variables.TAVariable;
 
 public class ParameterSetup extends TAInstruction {
@@ -16,5 +17,10 @@ public class ParameterSetup extends TAInstruction {
   @Override
   public String toString() {
     return "param " + parameter;
+  }
+
+  @Override
+  public void accept(TABasicBlockVisitor v) {
+    v.visit(this);
   }
 }

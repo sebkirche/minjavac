@@ -1,10 +1,10 @@
 package analysis.tac.variables;
 
-public class TANormalVar extends TAVariable {
+public class TAFieldVar extends TAVariable {
   private String name;
 
-  public TANormalVar(String s) {
-    name = s;
+  public TAFieldVar(String n) {
+    name = n;
   }
 
   public String getName() {

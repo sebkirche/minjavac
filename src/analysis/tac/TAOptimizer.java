@@ -1,13 +1,14 @@
 package analysis.tac;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ListIterator;
-import analysis.tac.instructions.Jump;
-import analysis.tac.instructions.Label;
-import analysis.tac.instructions.TAInstruction;
-import analysis.tac.instructions.ConditionalJump;
+import analysis.tac.instructions.*;
+import analysis.tac.variables.TALocalVar;
+import analysis.tac.variables.TAVariable;
 
 public class TAOptimizer {
   public static void peepholeOptimize(List<TAInstruction> instructions) {
@@ -82,5 +83,82 @@ public class TAOptimizer {
         it.remove();
       }
     }
+  }
+
+  public static void calculateLiveness(
+      List<TABasicBlock> code, List<Integer>[] graph) {
+    
+    
+  }
+}
+
+class UsedLocalVarsVisitor implements TABasicBlockVisitor {
+  private Set<TALocalVar> readVars, writeVars;
+
+  public  UsedLocalVarsVisitor() {
+    readVars = new HashSet<TALocalVar>(30);
+    writeVars = new HashSet<TALocalVar>(30);
+  }
+
+  public Set<TALocalVar> readVars() {
+    return readVars;
+  }
+
+  public Set<TALocalVar> writeVars() {
+    return writeVars;
+  }
+
+  public void visit(TABasicBlock block) {
+    for (TAInstruction i : block.instructions())
+      i.accept(this);
+  }
+
+  public void visit(Copy copy) {
+    visitWrite(copy.getDestiny());
+    visitRead(copy.getSource());
+  }
+
+  public void visit(Jump jump) {
+    if (jump.isConditionalJump()) {
+      ConditionalJump j = (ConditionalJump)jump;
+      visitRead(j.getA());
+      if (j.getB() != null) visitRead(j.getB());
+    }
+  }
+
+  public void visit(Operation op) {
+    visitWrite(op.getDestiny());
+    visitRead(op.getA());
+    if (op.getB() != null) visitRead(op.getB());
+  }
+
+  public void visit(ParameterSetup param) {
+    visitRead(param.getParameter());
+  }
+
+  public void visit(PrintInstruction print) {
+    visitRead(print.getVar());
+  }
+
+  public void visit(ProcedureCall proc) {
+    visitWrite(proc.getDestiny());
+  }
+
+  public void visit(Return ret) {
+    visitRead(ret.getReturnVariable());
+  }
+
+  public void visit(Action action) { }
+
+  public void visit(Label label) { }
+  
+  private void visitRead(TAVariable v) {
+    if (v instanceof TALocalVar)
+      readVars.add((TALocalVar)v);
+  }
+
+  private void visitWrite(TAVariable v) {
+    if (v instanceof TALocalVar)
+      writeVars.add((TALocalVar)v);
   }
 }

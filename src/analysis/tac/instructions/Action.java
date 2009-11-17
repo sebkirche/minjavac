@@ -1,5 +1,7 @@
 package analysis.tac.instructions;
 
+import analysis.tac.TABasicBlockVisitor;
+
 public class Action extends TAInstruction {
   private Opcode opcode;
 
@@ -14,5 +16,9 @@ public class Action extends TAInstruction {
   @Override
   public String toString() {
     return opcode.toString();
+  }
+
+  public void accept(TABasicBlockVisitor v) {
+    v.visit(this);
   }
 }

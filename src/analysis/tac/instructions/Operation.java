@@ -1,5 +1,6 @@
 package analysis.tac.instructions;
 
+import analysis.tac.TABasicBlockVisitor;
 import analysis.tac.variables.TAVariable;
 
 public class Operation extends TAInstruction {
@@ -39,5 +40,10 @@ public class Operation extends TAInstruction {
       return String.format("%s := %s %s, %s", dest, op, a, b);
     else
       return String.format("%s := %s %s", dest, op ,a);
+  }
+
+  @Override
+  public void accept(TABasicBlockVisitor v) {
+    v.visit(this);
   }
 }
