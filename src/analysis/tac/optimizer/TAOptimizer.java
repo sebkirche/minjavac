@@ -86,10 +86,8 @@ public class TAOptimizer {
     TABasicBlockVisitor usedVars = new UsedLocalVarsVisitor();
     TABasicBlockVisitor deadVars = new DeadVarsVisitor();
 
-    for (TABasicBlock block : code) {
+    for (TABasicBlock block : code)
       block.accept(usedVars);
-      block.accept(deadVars);
-    }
 
     for (int i = 0; i < code.size(); ++i) {
       TABasicBlock block = code.get(i);
@@ -103,6 +101,9 @@ public class TAOptimizer {
       for (Integer j : graph[i])
         livenessCalcRec(j, visited, code, graph, candidates, liveVars);
     }
+
+    for (TABasicBlock block : code)
+      block.accept(deadVars);
   }
 
   private static void livenessCalcRec(

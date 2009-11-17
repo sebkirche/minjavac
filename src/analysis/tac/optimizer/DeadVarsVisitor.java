@@ -15,6 +15,9 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
 
   public void visit(TABasicBlock block) {
     deadVars = new HashSet<TALocalVar>(20);
+    deadVars.addAll(block.readVars());
+    deadVars.addAll(block.writeVars());
+    deadVars.removeAll(block.liveVars());
 
     List<TAInstruction> code = block.instructions();
 
