@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import analysis.tac.instructions.Jump;
 import analysis.tac.instructions.Label;
 import analysis.tac.instructions.TAInstruction;
+import analysis.tac.optimizer.TAOptimizer;
 
 public class TAProcedure {
   private Label label;
@@ -32,12 +33,16 @@ public class TAProcedure {
   @Override
   public String toString() {
     String str = "procedure " + label;
+    String pad = "   ";
 
-    boolean f = true;
-    for (TABasicBlock b : code) {
-      if (f) { f = false; str += "\n"; }
-      else { str += "\n\n"; }
-      str += b;
+
+    for (int i = 0; i < code.size(); ++i) {
+      if (i == 0) str += "\n";
+      else str += "\n\n";
+
+      str += pad + "# Block     : " + i + "\n";
+      str += pad + "# adj       : " + graph[i] + "\n";
+      str += code.get(i);
     }
 
     str += "\nend";
@@ -47,6 +52,7 @@ public class TAProcedure {
   public void setCode(List<TAInstruction> instructions) {
     buildBlocks(instructions);
     buildFlowGraph();
+    TAOptimizer.livenessCalculation(code, graph);
   }
 
   private void buildBlocks(List<TAInstruction> instr) {

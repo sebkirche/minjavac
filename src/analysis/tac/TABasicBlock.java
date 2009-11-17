@@ -71,20 +71,21 @@ public class TABasicBlock {
   @Override
   public String toString() {
     String str = "";
+    String pad = "   ";
+    String cpad = pad + "# ";
+
+    str += cpad + "write     : " + writeVars + "\n";
+    str += cpad + "read      : " + readVars + "\n";
+    str += cpad + "firstRead : " + firstReadVars + "\n";
+    str += cpad + "live      : " + liveVars + "\n";
 
     for (Label l : labels())
       str += " " + l + ":\n";
 
     for (TAInstruction i : instructions())
-      str += "   " + i + ";\n";
+      str += pad + i + ";\n";
 
-    str = str.trim();
-
-    if (!labels().isEmpty())
-      str = " " + str;
-    else
-      str = "   " + str;
-
+    str = pad + str.trim();
     return str;
   }
 

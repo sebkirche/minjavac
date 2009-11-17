@@ -95,7 +95,7 @@ public class TAOptimizer {
       TABasicBlock block = code.get(i);
       
       Set<TALocalVar> candidates = new HashSet<TALocalVar>(block.writeVars());
-      Set<TALocalVar> liveVars = new HashSet<TALocalVar>(5);
+      Set<TALocalVar> liveVars = block.liveVars();
 
       boolean[] visited = new boolean[code.size()];
       for (int j = 0; j < code.size(); ++j) visited[j] = false;
