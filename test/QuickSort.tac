@@ -250,8 +250,8 @@ procedure QS::Sort
    # Block     : 19
    # adj       : [21]
    # write     : [nt, .call, .add_B, .array_lookup_F, .array_lookup_E, .call_A, .sub_B]
-   # read      : [.call, .add_B, .array_lookup_F, t, .array_lookup_E, .call_A, .sub_B, left, right, i]
-   # firstRead : [t, left, right, i]
+   # read      : [.call, .add_B, .array_lookup_F, t, .array_lookup_E, .call_A, .sub_B, left, j, right, i]
+   # firstRead : [t, left, j, right, i]
    # live      : []
  .while_false:
    .array_lookup_E := number[i];
