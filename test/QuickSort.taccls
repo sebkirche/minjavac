@@ -5,8 +5,7 @@ IR:
 
 class QuickSort:
 
-procedure QuickSort::main
-[]
+procedure QuickSort::main[Ljava.util.List;@337838
    .new_QS := new QS;
    save_context;
    param .new_QS;
@@ -19,8 +18,7 @@ end
 
 class QS:
 
-procedure QS::Start
-[]
+procedure QS::Start[Ljava.util.List;@c1b531
    save_context;
    param this;
    param sz;
@@ -50,29 +48,7 @@ procedure QS::Start
    return 0;
 end
 
-procedure QS::Sort
-[20, 1]
-[2]
-[19, 3]
-[4]
-[9, 5]
-[7, 6]
-[8]
-[8]
-[4]
-[10]
-[15, 11]
-[13, 12]
-[14]
-[14]
-[10]
-[17, 16]
-[18]
-[18]
-[2]
-[21]
-[21]
-[]
+procedure QS::Sort[Ljava.util.List;@15eb0a9
    t := 0;
    if greater_or_equal(left, right) goto .if_false;
 
@@ -176,11 +152,7 @@ procedure QS::Sort
    return 0;
 end
 
-procedure QS::Print
-[1]
-[3, 2]
-[1]
-[]
+procedure QS::Print[Ljava.util.List;@1a05308
    j := 0;
 
  .loop:
@@ -196,8 +168,7 @@ procedure QS::Print
    return 0;
 end
 
-procedure QS::Init
-[]
+procedure QS::Init[Ljava.util.List;@ab50cd
    size := sz;
    .new_array := new[] sz;
    number := .new_array;
