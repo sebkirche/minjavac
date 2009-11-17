@@ -1,27 +1,26 @@
 package analysis.symboltable;
 
 import java.util.Set;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import analysis.syntaxtree.*;
 
 public class SymbolTable {
-  private Map<String,Class> classMap;
+  private Map<String,ClassDescriptor> classMap;
 
   public SymbolTable() {
-    classMap = new HashMap<String, Class>(20);
+    classMap = new HashMap<String, ClassDescriptor>(20);
   }
 
   public boolean addClass(String id, String parent) {
     if (containsClass(id))
       return false;
 
-    classMap.put(id, new Class(id, parent));
+    classMap.put(id, new ClassDescriptor(id, parent));
     return true;
   }
 
-  public Class getClass(String id) {
+  public ClassDescriptor getClass(String id) {
     if (containsClass(id))
       return classMap.get(id);
 
@@ -36,7 +35,7 @@ public class SymbolTable {
     return classMap.containsKey(id);
   }
 
-  public Type getVarType(Method m, Class c, String varId) {
+  public Type getVarType(MethodDescriptor m, ClassDescriptor c, String varId) {
     if (m != null) {
       if (m.getLocalVar(varId) != null)
         return m.getLocalVar(varId).type();
@@ -53,21 +52,17 @@ public class SymbolTable {
       c = getClass(c.parent());
     }
 
-    System.out.println("Variable " + varId + " not defined in current scope");
-    System.exit(0);
-    return null;
+    throw new Error("Variable " + varId + " not defined in current scope");
   }
 
-  public Method getMethod(String methodName, String className) {
-    if (getClass(className) == null) {
-      System.out.println("Class " + className + " not defined");
-      System.exit(0);
-    }
+  public MethodDescriptor getMethod(String methodN, String classN) {
+    if (getClass(classN) == null)
+      throw new Error("Class " + classN + " not defined");
 
-    Class c = getClass(className);
+    ClassDescriptor c = getClass(classN);
     while (c != null) {
-      if (c.getMethod(methodName) != null)
-        return c.getMethod(methodName);
+      if (c.getMethod(methodN) != null)
+        return c.getMethod(methodN);
 
       if (c.parent() == null)
         break;
@@ -75,21 +70,17 @@ public class SymbolTable {
       c = getClass(c.parent());
     }
 
-    System.out.println("Method " + methodName + " not defined in class " + className);
-    System.exit(0);
-    return null;
+    throw new Error("Method " + methodN + " not defined in class " + classN);
   }
 
-  public Type getMethodType(String methodName, String className) {
-    if (getClass(className) == null) {
-      System.out.println("Class " + className + " not defined");
-      System.exit(0);
-    }
+  public Type getMethodType(String methodN, String classN) {
+    if (getClass(classN) == null)
+      throw new Error("Class " + classN + " not defined");
 
-    Class c = getClass(className);
+    ClassDescriptor c = getClass(classN);
     while (c != null) {
-      if (c.getMethod(methodName) != null)
-        return c.getMethod(methodName).getReturnType();
+      if (c.getMethod(methodN) != null)
+        return c.getMethod(methodN).getReturnType();
 
       if (c.parent() == null)
         break;
@@ -97,14 +88,12 @@ public class SymbolTable {
       c = getClass(c.parent());
     }
 
-    System.out.println("Method " + methodName + " not defined in class " + className);
-    System.exit(0);
-    return null;
+    throw new Error("Method " + methodN + " not defined in class " + classN);
   }
 
-  public Class getMethodClass(String instanceClass, String methodName) {
+  public ClassDescriptor getMethodClass(String instanceClass, String methodName) {
     String className = instanceClass;
-    Class c = getClass(className);
+    ClassDescriptor c = getClass(className);
 
     while (true) {
       if (c.containsMethod(methodName))
@@ -132,7 +121,7 @@ public class SymbolTable {
       IdentifierType i1 = (IdentifierType) t1;
       IdentifierType i2 = (IdentifierType) t2;
 
-      Class c = getClass(i2.className);
+      ClassDescriptor c = getClass(i2.className);
       while (c != null) {
         if (i1.className.equals(c.getName()))
           return true;

@@ -1,16 +1,16 @@
 package analysis.tac.instructions;
 
-import analysis.tac.variables.Variable;
+import analysis.tac.variables.TAVariable;
 
-public class Operation extends Instruction {
+public class Operation extends TAInstruction {
   private Opcode op;
-  private Variable dest, a, b;
+  private TAVariable dest, a, b;
 
-  public Operation(Opcode op, Variable x, Variable y) {
+  public Operation(Opcode op, TAVariable x, TAVariable y) {
     this(op, x, y, null);
   }
 
-  public Operation(Opcode _op, Variable _d, Variable _a, Variable _b) {
+  public Operation(Opcode _op, TAVariable _d, TAVariable _a, TAVariable _b) {
     op = _op;
     dest = _d;
     a = _a;
@@ -21,15 +21,15 @@ public class Operation extends Instruction {
     return op;
   }
 
-  public Variable getDestiny() {
+  public TAVariable getDestiny() {
     return dest;
   }
 
-  public Variable getA() {
+  public TAVariable getA() {
     return a;
   }
 
-  public Variable getB() {
+  public TAVariable getB() {
     return b;
   }
 

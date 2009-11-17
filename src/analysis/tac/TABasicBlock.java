@@ -6,18 +6,18 @@ import java.util.ArrayList;
 
 public class TABasicBlock {
   private List<Label> _labels;
-  private List<Instruction> _instructions;
+  private List<TAInstruction> _instructions;
 
   public TABasicBlock() {
     _labels = new ArrayList<Label>(7);
-    _instructions = new ArrayList<Instruction>(20);
+    _instructions = new ArrayList<TAInstruction>(20);
   }
 
   public List<Label> labels() {
     return _labels;
   }
 
-  public List<Instruction> instructions() {
+  public List<TAInstruction> instructions() {
     return _instructions;
   }
 
@@ -28,7 +28,7 @@ public class TABasicBlock {
     for (Label l : labels())
       str += " " + l + ":\n";
 
-    for (Instruction i : instructions())
+    for (TAInstruction i : instructions())
       str += "    " + i + ";\n";
 
     str = str.trim();
@@ -39,9 +39,5 @@ public class TABasicBlock {
       str = "    " + str;
 
     return str;
-  }
-
-  void accept(TAVisitor v) {
-    v.visit(this);
   }
 }

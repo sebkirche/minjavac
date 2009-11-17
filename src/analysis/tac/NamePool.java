@@ -1,18 +1,20 @@
 package analysis.tac;
 
-import analysis.tac.instructions.Label;
-import analysis.tac.variables.NormalVar;
-import analysis.tac.variables.Variable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
+import analysis.syntaxtree.Type;
+import analysis.tac.instructions.Label;
+import analysis.tac.variables.TANormalVar;
+import analysis.tac.variables.TAVariable;
 
 public class NamePool {
   public static Label labelName(String s) {
     return new Label(nextName(s));
   }
 
-  public static Variable tempName(String s) {
-    return new NormalVar(nextName(s));
+  public static TAVariable tempName(String s, Type t) {
+    TAModule.getInstance().addTemporaryVar(s, t);
+    return new TANormalVar(nextName(s));
   }
 
   public static String nextName(String s) {

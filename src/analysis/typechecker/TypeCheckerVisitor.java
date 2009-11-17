@@ -6,8 +6,8 @@ import analysis.visitors.TypeVisitor;
 
 public class TypeCheckerVisitor implements TypeVisitor {
   private SymbolTable symbolTable;
-  private analysis.symboltable.Class currentClass;
-  private analysis.symboltable.Method currentMethod;
+  private analysis.symboltable.ClassDescriptor currentClass;
+  private analysis.symboltable.MethodDescriptor currentMethod;
 
   public TypeCheckerVisitor() { 
     symbolTable = SymbolTable.getInstance();
@@ -142,7 +142,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
   public Type visit(If ifStmt) {
     Type expT = ifStmt.boolExpr.accept(this);
-    Type booleanT = new BooleanType();
+    Type booleanT = BooleanType.instance();
 
     if (!symbolTable.compareTypes(booleanT, expT))
       error(booleanT, expT);
@@ -154,7 +154,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
   public Type visit(While whileStmt) {
     Type expT = whileStmt.boolExpr.accept(this);
-    Type booleanT = new BooleanType();
+    Type booleanT = BooleanType.instance();
 
     if (!symbolTable.compareTypes(booleanT, expT))
       error(booleanT, expT);
@@ -165,7 +165,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
   public Type visit(Print printStmt) {
     Type expT = printStmt.intExpr.accept(this);
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
 
     if (!symbolTable.compareTypes(intT, expT))
       error(intT, expT);
@@ -184,7 +184,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
   }
 
   public Type visit(ArrayAssign arrayAssign) {
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
     Type indexT = arrayAssign.indexExpr.accept(this);
     Type expT = arrayAssign.valueExpr.accept(this);
 
@@ -200,7 +200,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
   public Type visit(And andExp) {
     Type expA = andExp.e1.accept(this);
     Type expB = andExp.e2.accept(this);
-    Type boolT = new BooleanType();
+    Type boolT = BooleanType.instance();
 
     if (!symbolTable.compareTypes(boolT, expA))
       error(boolT, expA);
@@ -215,7 +215,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
   public Type visit(LessThan lessExp) {
     Type expA = lessExp.e1.accept(this);
     Type expB = lessExp.e2.accept(this);
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
 
     if (!symbolTable.compareTypes(intT, expA))
       error(intT, expA);
@@ -223,7 +223,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     if (!symbolTable.compareTypes(intT, expB))
       error(intT, expB);
 
-    Type boolT = new BooleanType();
+    Type boolT = BooleanType.instance();
     lessExp.setType(boolT);
     return boolT;
   }
@@ -231,7 +231,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
   public Type visit(Plus plusExp) {
     Type expA = plusExp.e1.accept(this);
     Type expB = plusExp.e2.accept(this);
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
 
     if (!symbolTable.compareTypes(intT, expA))
       error(intT, expA);
@@ -246,7 +246,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
   public Type visit(Minus minusExp) {
     Type expA = minusExp.e1.accept(this);
     Type expB = minusExp.e2.accept(this);
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
 
     if (!symbolTable.compareTypes(intT, expA))
       error(intT, expA);
@@ -261,7 +261,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
   public Type visit(Times timesExp) {
     Type expA = timesExp.e1.accept(this);
     Type expB = timesExp.e2.accept(this);
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
 
     if (!symbolTable.compareTypes(intT, expA))
       error(intT, expA);
@@ -276,8 +276,8 @@ public class TypeCheckerVisitor implements TypeVisitor {
   public Type visit(ArrayLookup arrayLookup) {
     Type expArr = arrayLookup.arrayExpr.accept(this);
     Type expInd = arrayLookup.indexExpr.accept(this);
-    Type arrayT = new IntArrayType();
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
+    Type arrayT = IntArrayType.instance();
 
     if (!symbolTable.compareTypes(arrayT, expArr))
       error(arrayT, expArr);
@@ -291,12 +291,12 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
   public Type visit(ArrayLength arrayLength) {
     Type expArr = arrayLength.arrayExpr.accept(this);
-    Type arrayT = new IntArrayType();
+    Type arrayT = IntArrayType.instance();
 
     if (!symbolTable.compareTypes(arrayT, expArr))
       error(arrayT, expArr);
 
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
     arrayLength.setType(intT);
     return intT;
   }
@@ -309,7 +309,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
     String classNameStr = ((IdentifierType)objT).className;
     String methodName = callStmt.methodId.name;
-    Method method = symbolTable.getMethod(methodName, classNameStr);
+    MethodDescriptor method = symbolTable.getMethod(methodName, classNameStr);
 
     if (method.getParameters().size() != callStmt.paramExprList.size()) {
       System.out.println("Wrong call signature: different sizes");
@@ -317,7 +317,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
     }
 
     for (int i = 0; i < method.getParameters().size(); ++i) {
-      Variable param = method.getParameterAt(i);
+      VariableDescriptor param = method.getParameterAt(i);
       Exp exp = callStmt.paramExprList.elementAt(i);
 
       Type paramT = param.type();
@@ -332,19 +332,19 @@ public class TypeCheckerVisitor implements TypeVisitor {
   }
 
   public Type visit(IntegerLiteral intLit) {
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
     intLit.setType(intT);
     return intT;
   }
 
   public Type visit(True t) {
-    Type boolT = new BooleanType();
+    Type boolT = BooleanType.instance();
     t.setType(boolT);
     return boolT;
   }
 
   public Type visit(False f) {
-    Type boolT = new BooleanType();
+    Type boolT = BooleanType.instance();
     f.setType(boolT);
     return boolT;
   }
@@ -356,12 +356,12 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
   public Type visit(NewArray newArrayExp) {
     Type expT = newArrayExp.sizeExpr.accept(this);
-    Type intT = new IntegerType();
+    Type intT = IntegerType.instance();
 
     if (!symbolTable.compareTypes(intT, expT))
       error(intT, expT);
 
-    Type arrType = new IntArrayType();
+    Type arrType = IntArrayType.instance();
     newArrayExp.setType(arrType);
     return arrType;
   }
@@ -375,7 +375,7 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
   public Type visit(Not notExp) {
     Type expT = notExp.boolExpr.accept(this);
-    Type boolT = new BooleanType();
+    Type boolT = BooleanType.instance();
 
     if (!symbolTable.compareTypes(boolT, expT))
       error(boolT, expT);

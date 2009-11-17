@@ -1,9 +1,9 @@
 package analysis.tac.variables;
 
-public class ConstantVar extends Variable {
+public class TAConstantVar extends TAVariable {
   private int value;
 
-  public ConstantVar(int v) {
+  public TAConstantVar(int v) {
     value = v;
   }
 

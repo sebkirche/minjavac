@@ -1,6 +1,6 @@
 package analysis.tac.instructions;
 
-public class Label extends Instruction {
+public class Label extends TAInstruction {
   private String label;
 
   public Label(String l) {
@@ -11,6 +11,11 @@ public class Label extends Instruction {
     return label;
   }
 
+  @Override
+  public boolean equals(Object e) {
+    return ((Label)e).label.equals(label);
+  }
+  
   @Override
   public String toString() {
     return label;

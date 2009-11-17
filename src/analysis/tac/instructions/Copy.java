@@ -1,20 +1,20 @@
 package analysis.tac.instructions;
 
-import analysis.tac.variables.Variable;
+import analysis.tac.variables.TAVariable;
 
-public class Copy extends Instruction {
-  private Variable source, destiny;
+public class Copy extends TAInstruction {
+  private TAVariable source, destiny;
 
-  public Copy(Variable _x, Variable _y) {
+  public Copy(TAVariable _x, TAVariable _y) {
     destiny = _x;
     source = _y;
   }
 
-  public Variable getSource() {
+  public TAVariable getSource() {
     return source;
   }
 
-  public Variable getDestiny() {
+  public TAVariable getDestiny() {
     return destiny;
   }
 

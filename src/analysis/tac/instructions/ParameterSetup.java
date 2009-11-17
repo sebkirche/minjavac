@@ -1,15 +1,15 @@
 package analysis.tac.instructions;
 
-import analysis.tac.variables.Variable;
+import analysis.tac.variables.TAVariable;
 
-public class ParameterSetup extends Instruction {
-  private Variable parameter;
+public class ParameterSetup extends TAInstruction {
+  private TAVariable parameter;
 
-  public ParameterSetup(Variable v) {
+  public ParameterSetup(TAVariable v) {
     parameter = v;
   }
 
-  public Variable getParameter() {
+  public TAVariable getParameter() {
     return parameter;
   }
 

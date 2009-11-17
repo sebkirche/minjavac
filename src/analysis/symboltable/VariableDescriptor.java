@@ -2,11 +2,12 @@ package analysis.symboltable;
 
 import analysis.syntaxtree.Type;
 
-public class Variable {
+public class VariableDescriptor {
   String name;
   Type type;
+  int offset;
 
-  public Variable(String varName, Type varType) {
+  public VariableDescriptor(String varName, Type varType) {
     name = varName;
     type = varType;
   }
@@ -17,5 +18,13 @@ public class Variable {
 
   public Type type() {
     return type;
+  }
+
+  public void setOffset(int n) {
+    offset = n;
+  }
+
+  public int getOffset() {
+    return offset;
   }
 }

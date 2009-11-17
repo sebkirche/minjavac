@@ -4,14 +4,15 @@ import analysis.syntaxtree.*;
 import analysis.visitors.Visitor;
 
 public class SymbolTableBuilderVisitor implements Visitor {
-  private Class currentClass;
-  private Method currentMethod;
+  private ClassDescriptor currentClass;
+  private MethodDescriptor currentMethod;
   private SymbolTable symbolTable;
 
   public SymbolTableBuilderVisitor() {
     currentClass = null;
     currentMethod = null;
     symbolTable = new SymbolTable();
+    SymbolTable.setInstance(symbolTable);
   }
 
   public SymbolTable getSymbolTable() {

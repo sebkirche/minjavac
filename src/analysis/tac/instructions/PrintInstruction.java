@@ -1,15 +1,15 @@
 package analysis.tac.instructions;
 
-import analysis.tac.variables.Variable;
+import analysis.tac.variables.TAVariable;
 
-public class PrintInstruction extends Instruction {
-  private Variable var;
+public class PrintInstruction extends TAInstruction {
+  private TAVariable var;
 
-  public PrintInstruction(Variable v) {
+  public PrintInstruction(TAVariable v) {
     var = v;
   }
 
-  public Variable getVar() {
+  public TAVariable getVar() {
     return var;
   }
 

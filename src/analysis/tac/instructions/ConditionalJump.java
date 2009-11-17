@@ -1,12 +1,12 @@
 package analysis.tac.instructions;
 
-import analysis.tac.variables.Variable;
+import analysis.tac.variables.TAVariable;
 
 public class ConditionalJump extends Jump {
-  private Variable a, b;
+  private TAVariable a, b;
   private Condition cond;
 
-  public ConditionalJump(Condition c, Variable _a, Variable _b, Label target) {
+  public ConditionalJump(Condition c, TAVariable _a, TAVariable _b, Label target) {
     super(target);
     cond = c;
     a = _a;
@@ -17,11 +17,35 @@ public class ConditionalJump extends Jump {
     return cond;
   }
 
-  public Variable getA() {
+  public void setInverseCondition() {
+    switch (cond) {
+      case EQUAL:
+        cond = Condition.NOT_EQUAL;
+        break;
+
+      case NOT_EQUAL:
+        cond = Condition.EQUAL;
+        break;
+
+      case LESS_THAN:
+        cond = Condition.GREATER_OR_EQUAL;
+        break;
+
+      case IS_TRUE:
+        cond = Condition.IS_FALSE;
+        break;
+
+      case IS_FALSE:
+        cond = Condition.IS_TRUE;
+        break;
+    }
+  }
+
+  public TAVariable getA() {
     return a;
   }
 
-  public Variable getB() {
+  public TAVariable getB() {
     return b;
   }
 

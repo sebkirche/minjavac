@@ -282,8 +282,8 @@ Type ArrayOrIntegerType() :
 {}
 {
   <INT>
-  [<LBRACKET> <RBRACKET> { return new IntArrayType(); }]
-  { return new IntegerType(); }
+  [<LBRACKET> <RBRACKET> { return IntArrayType.instance(); }]
+  { return IntegerType.instance(); }
 }
 
 
@@ -291,7 +291,7 @@ Type BooleanType() :
 {}
 {
   <BOOLEAN>
-  { return new BooleanType(); }
+  { return BooleanType.instance(); }
 }
 
 

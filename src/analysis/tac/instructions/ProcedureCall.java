@@ -1,17 +1,17 @@
 package analysis.tac.instructions;
 
-import analysis.tac.variables.Variable;
+import analysis.tac.variables.TAVariable;
 
-public class ProcedureCall extends Instruction {
-  private Variable dest;
+public class ProcedureCall extends TAInstruction {
+  private TAVariable dest;
   private Label procedure;
 
-  public ProcedureCall(Variable _d, Label _proc) {
+  public ProcedureCall(TAVariable _d, Label _proc) {
     dest = _d;
     procedure = _proc;
   }
 
-  public Variable getDestiny() {
+  public TAVariable getDestiny() {
     return dest;
   }
 

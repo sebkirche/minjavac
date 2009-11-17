@@ -1,6 +1,6 @@
 package analysis.tac.instructions;
 
-public class Action extends Instruction {
+public class Action extends TAInstruction {
   private Opcode opcode;
 
   public Action(Opcode op) {

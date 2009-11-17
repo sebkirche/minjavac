@@ -2,77 +2,64 @@ package analysis.tac;
 
 import java.util.List;
 import java.util.ArrayList;
-import analysis.tac.instructions.Label;
-import analysis.tac.instructions.Instruction;
-import analysis.tac.variables.NormalVar;
+import java.util.LinkedList;
+import analysis.syntaxtree.Type;
+import analysis.symboltable.SymbolTable;
+import analysis.symboltable.MethodDescriptor;
+import analysis.tac.instructions.TAInstruction;
 
 public class TAModule {
   private TAClass openClass;
-  private TAProcedure openProcedure;
-  private TABasicBlock openBasicBlock;
   private List<TAClass> classes;
+  private TAProcedure openProcedure;
+  private List<TAInstruction> instructions;
 
   public TAModule() {
     classes = new ArrayList<TAClass>(5);
     openClass = null;
     openProcedure = null;
-    openBasicBlock = null;
   }
 
   public void startClass(String name) {
     openClass = new TAClass(name); 
   }
 
-  public void addStaticVar(String name) {
-    openClass.getStaticVars().add(new NormalVar(name));
-  }
-
   public void startProcedure(String name) {
     openProcedure = new TAProcedure(name);
-    startBasicBlock();
+    instructions = new LinkedList<TAInstruction>();
   }
 
-  public void addParameter(String name) {
-    openProcedure.getParameters().add(new NormalVar(name));
+  public void addTemporaryVar(String name, Type type) {
+    String classN = openClass.getName();
+    String methodN = openProcedure.getName();
+    SymbolTable symT = SymbolTable.getInstance();
+    MethodDescriptor methodD = symT.getMethod(methodN, classN);
+    methodD.addLocalVar(name, type);
   }
 
-  public void addLocalVar(String name) {
-    openProcedure.getLocals().add(new NormalVar(name));
-  }
-
-  public void addInstruction(Instruction i) {
-    if (i.isLabel()) {
-      if (!openBasicBlock.instructions().isEmpty())
-        startBasicBlock();
-
-      openBasicBlock.labels().add((Label)i);
-    }
-    else {
-      openBasicBlock.instructions().add(i);
-
-      if (i.isJump())
-        startBasicBlock();
-    }
+  public void addInstruction(TAInstruction i) {
+    instructions.add(i);
   }
 
   public void closeProcedure() {
-    closeBasicBlock();
+    TAOptimizer.peepholeOptimize(instructions);
+    openProcedure.setCode(instructions);
     openClass.getProcedures().add(openProcedure);
+    instructions = null;
+    openProcedure = null;
   }
 
   public void closeClass() {
     classes.add(openClass);
+    openClass = null;
   }
 
-  private void startBasicBlock() {
-    closeBasicBlock();
-    openBasicBlock = new TABasicBlock();
-  }
+  public TAClass getClass(String className) {
+    for (TAClass c : classes)
+      if (c.getName().equals(className))
+        return c;
 
-  private void closeBasicBlock() {
-    if (openBasicBlock != null && !openBasicBlock.instructions().isEmpty())
-      openProcedure.getCode().add(openBasicBlock);
-    openBasicBlock = null;
+    return null;
   }
 
   @Override
@@ -85,7 +72,13 @@ public class TAModule {
     return str.trim();
   }
 
-  void accept(TAVisitor v) {
-    v.visit(this);
+  private static TAModule instance;
+
+  public static void setInstance(TAModule module) {
+    instance = module;
+  }
+
+  public static TAModule getInstance() {
+    return instance;
   }
 }

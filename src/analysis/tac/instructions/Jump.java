@@ -1,6 +1,6 @@
 package analysis.tac.instructions;
 
-public class Jump extends Instruction {
+public class Jump extends TAInstruction {
   private Label target;
 
   public Jump(Label l) {
@@ -9,6 +9,10 @@ public class Jump extends Instruction {
 
   public Label getTarget() {
     return target;
+  }
+
+  public void setTarget(Label l) {
+    target = l;
   }
 
   @Override

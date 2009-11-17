@@ -8,19 +8,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class Class {
+public class ClassDescriptor {
+  int size;
   Type classType;
   String name, baseClass;
-  Map<String,Method> methodMap;
-  Map<String,Variable> variableMap;
+  Map<String,MethodDescriptor> methodMap;
+  Map<String,VariableDescriptor> variableMap;
   
-  public Class(String id, String p) {
+  public ClassDescriptor(String id, String p) {
     name = id;
     baseClass = p;
 
     classType = new IdentifierType(id);
-    methodMap = new HashMap<String, Method>(20);
-    variableMap =  new HashMap<String, Variable>(20);
+    methodMap = new HashMap<String, MethodDescriptor>(20);
+    variableMap =  new HashMap<String, VariableDescriptor>(20);
   }
 
   public String getName() {
@@ -31,11 +32,19 @@ public class Class {
     return classType;
   }
 
+  public void setSize(int sz) {
+    size = sz;
+  }
+
+  public int getSize() {
+    return size;
+  }
+
   public boolean addMethod(String mName, Type mType) {
     if (containsMethod(mName))
       return false;
 
-    methodMap.put(mName, new Method(mName, mType));
+    methodMap.put(mName, new MethodDescriptor(mName, mType, this));
     return true;
   }
 
@@ -43,7 +52,7 @@ public class Class {
     return methodMap.keySet();
   }
 
-  public Method getMethod(String mName) {
+  public MethodDescriptor getMethod(String mName) {
     if (containsMethod(mName))
       return methodMap.get(mName);
 
@@ -54,7 +63,7 @@ public class Class {
     if (variableMap.containsKey(varName))
       return false;
 
-    variableMap.put(varName, new Variable(varName, varType));
+    variableMap.put(varName, new VariableDescriptor(varName, varType));
     return true;
   }
 
@@ -70,7 +79,7 @@ public class Class {
     return vars;
   }
 
-  public Variable getVar(String varName) {
+  public VariableDescriptor getVar(String varName) {
     if (containsVar(varName))
       return variableMap.get(varName);
 

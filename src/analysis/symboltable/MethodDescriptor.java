@@ -7,17 +7,19 @@ import java.util.ArrayList;
 import analysis.syntaxtree.Type;
 import java.util.Set;
 
-public class Method {
+public class MethodDescriptor {
   String name;
   Type returnType;
-  List<Variable> paramList;
-  Map<String, Variable> localVarMap;
+  ClassDescriptor classDescr;
+  List<VariableDescriptor> paramList;
+  Map<String, VariableDescriptor> localVarMap;
 
-  public Method(String mName, Type mReturnType) {
-    name = mName;
-    returnType = mReturnType;
-    paramList = new ArrayList<Variable>(20);
-    localVarMap = new HashMap<String, Variable>(20);
+  public MethodDescriptor(String n, Type retType, ClassDescriptor classD) {
+    name = n;
+    returnType = retType;
+    classDescr = classD;
+    paramList = new ArrayList<VariableDescriptor>(20);
+    localVarMap = new HashMap<String, VariableDescriptor>(20);
   }
 
   public String getName() {
@@ -28,20 +30,24 @@ public class Method {
     return returnType;
   }
 
+  public ClassDescriptor getClassDescriptor() {
+    return classDescr;
+  }
+
   public boolean addParameter(String paramName, Type paramType) {
     if (containsParameter(paramName)) {
       return false;
     }
 
-    paramList.add(new Variable(paramName, paramType));
+    paramList.add(new VariableDescriptor(paramName, paramType));
     return true;
   }
 
-  public List<Variable> getParameters() {
+  public List<VariableDescriptor> getParameters() {
     return paramList;
   }
 
-  public Variable getParameterAt(int i) {
+  public VariableDescriptor getParameterAt(int i) {
     if (i < paramList.size()) {
       return paramList.get(i);
     } else {
@@ -53,7 +59,7 @@ public class Method {
     if (containsVar(varName) || containsParameter(varName))
       return false;
 
-    localVarMap.put(varName, new Variable(varName, varType));
+    localVarMap.put(varName, new VariableDescriptor(varName, varType));
     return true;
   }
 
@@ -62,7 +68,7 @@ public class Method {
   }
 
   public boolean containsParameter(String pName) {
-    for (Variable v : paramList) {
+    for (VariableDescriptor v : paramList) {
       if (v.name().equals(pName)) {
         return true;
       }
@@ -75,12 +81,12 @@ public class Method {
     return localVarMap.keySet();
   }
 
-  public Variable getLocalVar(String varName) {
+  public VariableDescriptor getLocalVar(String varName) {
     return localVarMap.get(varName);
   }
 
-  public Variable getParameter(String pName) {
-    for (Variable v : paramList) {
+  public VariableDescriptor getParameter(String pName) {
+    for (VariableDescriptor v : paramList) {
       if (v.name().equals(pName)) {
         return v;
       }

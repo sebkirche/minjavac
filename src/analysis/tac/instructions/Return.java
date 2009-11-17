@@ -1,15 +1,15 @@
 package analysis.tac.instructions;
 
-import analysis.tac.variables.Variable;
+import analysis.tac.variables.TAVariable;
 
-public class Return extends Instruction {
-  private Variable v;
+public class Return extends TAInstruction {
+  private TAVariable v;
 
-  public Return(Variable _v) {
+  public Return(TAVariable _v) {
     v = _v;
   }
 
-  public Variable getReturnVariable() {
+  public TAVariable getReturnVariable() {
     return v;
   }
 

@@ -1,9 +1,9 @@
 package analysis.tac.variables;
 
-public class NormalVar extends Variable {
+public class TANormalVar extends TAVariable {
   private String name;
 
-  public NormalVar(String s) {
+  public TANormalVar(String s) {
     name = s;
   }
 
