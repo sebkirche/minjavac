@@ -24,8 +24,9 @@ public class TAModule {
     openClass = new TAClass(name); 
   }
 
-  public void startProcedure(String name) {
-    openProcedure = new TAProcedure(name);
+  public void startProcedure(String procName) {
+    String procLabel = openClass.getName() + "::" + procName;
+    openProcedure = new TAProcedure(procLabel);
     instructions = new LinkedList<TAInstruction>();
   }
 

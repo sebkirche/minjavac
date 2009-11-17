@@ -1,13 +1,13 @@
 package analysis.tac;
 
-import analysis.tac.instructions.ConditionalJump;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ListIterator;
-import analysis.tac.instructions.Label;
 import analysis.tac.instructions.Jump;
+import analysis.tac.instructions.Label;
 import analysis.tac.instructions.TAInstruction;
+import analysis.tac.instructions.ConditionalJump;
 
 public class TAOptimizer {
   public static void peepholeOptimize(List<TAInstruction> instructions) {
@@ -44,7 +44,8 @@ public class TAOptimizer {
         Label l = (Label)i2;
 
         if (j.getTarget().equals(l)) {
-          instructions.remove(p);
+          it.previous();
+          it.remove();
           labelCount.put(l.getLabel(), labelCount.get(l.getLabel())-1);
           continue;
         }
@@ -65,9 +66,8 @@ public class TAOptimizer {
         j1.setInverseCondition();
         j1.setTarget(l2);
 
-        Label l = j2.getTarget();
-        labelCount.put(l.getLabel(), labelCount.get(l.getLabel())-1);
-        instructions.remove(p+1);
+        labelCount.put(l1.getLabel(), labelCount.get(l1.getLabel())-1);
+        it.remove();
       }
     }
 

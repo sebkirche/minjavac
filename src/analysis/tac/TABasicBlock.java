@@ -1,24 +1,31 @@
 package analysis.tac;
 
 import java.util.List;
-import analysis.tac.instructions.*;
 import java.util.ArrayList;
+import analysis.tac.instructions.*;
 
 public class TABasicBlock {
-  private List<Label> _labels;
-  private List<TAInstruction> _instructions;
+  private List<Label> labels;
+  private List<TAInstruction> instructions;
 
   public TABasicBlock() {
-    _labels = new ArrayList<Label>(7);
-    _instructions = new ArrayList<TAInstruction>(20);
+    labels = new ArrayList<Label>(7);
+    instructions = new ArrayList<TAInstruction>(20);
   }
 
   public List<Label> labels() {
-    return _labels;
+    return labels;
   }
 
   public List<TAInstruction> instructions() {
-    return _instructions;
+    return instructions;
+  }
+
+  public TAInstruction lastInstruction() {
+    if (instructions.isEmpty())
+      return null;
+
+    return instructions.get(instructions.size()-1);
   }
 
   @Override
@@ -29,14 +36,14 @@ public class TABasicBlock {
       str += " " + l + ":\n";
 
     for (TAInstruction i : instructions())
-      str += "    " + i + ";\n";
+      str += "   " + i + ";\n";
 
     str = str.trim();
 
     if (!labels().isEmpty())
       str = " " + str;
     else
-      str = "    " + str;
+      str = "   " + str;
 
     return str;
   }
