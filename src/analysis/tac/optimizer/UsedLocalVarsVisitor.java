@@ -58,7 +58,11 @@ class UsedLocalVarsVisitor implements TABasicBlockVisitor {
   public void visit(Label label) { }
 
   private void visitRead(TAVariable v) {
-    if (v instanceof TALocalVar) {
+    if (v instanceof TAArrayCellVar) {
+      visitRead(((TAArrayCellVar)v).getIndexVar());
+      visitRead(((TAArrayCellVar)v).getArrayVar());
+    }
+    else if (v instanceof TALocalVar) {
       if (!seen.contains(v))
         block.firstReadVars().add((TALocalVar)v);
 
@@ -68,6 +72,10 @@ class UsedLocalVarsVisitor implements TABasicBlockVisitor {
   }
 
   private void visitWrite(TAVariable v) {
+    if (v instanceof TAArrayCellVar) {
+      visitRead(((TAArrayCellVar)v).getIndexVar());
+      visitRead(((TAArrayCellVar)v).getArrayVar());
+    }
     if (v instanceof TALocalVar) {
       block.writeVars().add((TALocalVar)v);
       seen.add(v);

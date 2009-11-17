@@ -2,6 +2,7 @@ package analysis.tac.optimizer;
 
 import analysis.tac.*;
 import analysis.tac.instructions.*;
+import analysis.tac.variables.TAArrayCellVar;
 import analysis.tac.variables.TALocalVar;
 import analysis.tac.variables.TAVariable;
 import java.util.HashSet;
@@ -64,14 +65,21 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
   public void visit(Label label) { }
 
   private void visitRead(TAVariable v) {
-    if (v instanceof TALocalVar) {
+    if (v instanceof TAArrayCellVar) {
+      visitRead(((TAArrayCellVar)v).getIndexVar());
+      visitRead(((TAArrayCellVar)v).getArrayVar());
+    } else if (v instanceof TALocalVar) {
       deadVars.remove((TALocalVar)v);
     }
   }
 
   private void visitWrite(TAVariable v) {
-    if (v instanceof TALocalVar)
+    if (v instanceof TAArrayCellVar) {
+      visitRead(((TAArrayCellVar)v).getIndexVar());
+      visitRead(((TAArrayCellVar)v).getArrayVar());
+    } else if (v instanceof TALocalVar) {
       deadVars.add((TALocalVar)v);
+    }
   }
 
   private void attachDeadVars(TAInstruction i) {
