@@ -1,5 +1,6 @@
 package analysis.tac;
 
+import analysis.tac.optimizer.TAOptimizer;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -47,7 +48,7 @@ public class TAModule {
   }
 
   public void closeProcedure() {
-    TAOptimizer.peepholeOptimize(instructions);
+    TAOptimizer.peepholeOptimization(instructions);
     openProcedure.setCode(instructions);
     openClass.getProcedures().add(openProcedure);
     instructions = null;
