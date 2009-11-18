@@ -59,7 +59,7 @@ public class NasmGenerator {
 
     for (TABasicBlock block : proc.getCode()) {
       code.add(Nasm.OTHER.make("\n"));
-      block.accept(blockEmitter);
+      blockEmitter.visit(block, method);
     }
 
     // epilogue

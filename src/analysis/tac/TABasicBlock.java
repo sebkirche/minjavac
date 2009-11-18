@@ -88,8 +88,4 @@ public class TABasicBlock {
     str = pad + str.trim();
     return str;
   }
-
-  public void accept(TABasicBlockVisitor v) {
-    v.visit(this);
-  }
 }

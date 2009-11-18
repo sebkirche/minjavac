@@ -1,21 +1,22 @@
 package backend.nasm;
 
 import java.util.*;
+import analysis.tac.*;
 import analysis.symboltable.*;
 import analysis.tac.variables.TALocalVar;
 import analysis.tac.instructions.TAInstruction;
 
 public class RegisterPool {
-  private static final Set<String> registerNames;
+  public static final List<String> registerNames;
   
   static {
-    registerNames = new HashSet<String>(20);
-    registerNames.add("eax");
+    registerNames = new ArrayList<String>(4);
     registerNames.add("ebx");
     registerNames.add("ecx");
-    registerNames.add("edx");
-    registerNames.add("esi");
-    registerNames.add("edi");
+    registerNames.add("eax");
+    //registerNames.add("edx"); (this)
+    //registerNames.add("esi");
+    //registerNames.add("edi");
   }
 
   private class VarGenDescriptor extends HashSet<String> {
@@ -103,18 +104,33 @@ public class RegisterPool {
   /**
    * descarta valores antigos desta variável
    */
-  private void killVar(String var) {
+  public void killVar(String var) {
     for (String reg : varDescriptor(var))
       regDescriptor(reg).remove(var);
 
     varDescriptor(var).clear();
   }
 
+  public void spillRegister(String reg) {
+    for (String var : copy(regDescriptor(reg)))
+      removeFromRegister(reg, var);
+  }
+
+  public boolean regNeedSaving(String reg) {
+    for (String var : regDescriptor(reg)) {
+      VarGenDescriptor varD = varDescriptor(var);
+      if (!isDead(var) && varD.size() == 1 && !varD.onMemory())
+        return true;
+    }
+
+    return false;
+  }
+
   /**
    * descarta o valor de var armazenado em reg
    */
-  private void removeFromRegister(String reg, String var) {
-    if (instruction.deadVars().contains(new TALocalVar(var))) {
+  public void removeFromRegister(String reg, String var) {
+    if (isDead(var)) {
       varDescriptor(var).clear();
     } else {
       VarGenDescriptor varD = varDescriptor(var);
@@ -137,7 +153,7 @@ public class RegisterPool {
   /**
    * prepara reg para receber o valor de var no lado esquerdo
    */
-  private void prepareDestiny(String reg, String var) {
+  public void prepareDestiny(String reg, String var) {
     for (String _var : copy(regDescriptor(reg)))
       if (!var.equals(_var))
         removeFromRegister(reg, _var);
@@ -149,7 +165,7 @@ public class RegisterPool {
   /**
    * prepara reg para receber o valor de var no lado direito
    */
-  private void prepareSource(String reg, String var) {
+  public void prepareSource(String reg, String var) {
     if (!regDescriptor(reg).contains(var)) {
       for (String _var : copy(regDescriptor(reg)))
         removeFromRegister(reg, _var);
@@ -167,6 +183,71 @@ public class RegisterPool {
     varDescriptor(var).add(reg);
   }
 
+  public String getRegForDestiny(String var) {
+    return minSpills(var);
+  }
+
+  public String getRegForSource(String var) {
+    for (String reg : registerNames)
+      if (regDescriptor(reg).contains(var))
+        return reg;
+
+    return minSpills("");
+  }
+
+  public void saveForExit(TABasicBlock block) {
+    for (TALocalVar v : block.liveVars()) {
+      String var = v.getName();
+      VarGenDescriptor varD = varDescriptor(var);
+      
+      if (!varNeedSaving(var)) continue;
+
+      String reg = varD.iterator().next();
+
+      String mov = String.format(
+        "mov [%s], %s", varD.getMemoryId(var), reg
+      );
+
+      emit(Nasm.OP.make(mov));
+    }
+  }
+
+  public String getVariableHandle(String var) {
+    VarGenDescriptor varD = varDescriptor(var);
+
+    if (!varD.isEmpty())
+      return varD.iterator().next();
+    else
+      return '[' + varD.getMemoryId(var) + ']';
+  }
+
+  /**
+   * returns the local best register for holding some new
+   * value, disregarding the value of deadVar
+   */
+  private String minSpills(String deadVar) {
+    int min_cost = Integer.MAX_VALUE;
+    String best_reg = "";
+
+    for (String reg : registerNames) {
+      int cost = 0;
+
+      for (String var : regDescriptor(reg)) {
+        if (var.equals(deadVar) || isDead(var)) continue;
+        ++cost;
+      }
+
+      if (cost < min_cost) {
+        min_cost = cost;
+        best_reg = reg;
+      }
+
+      if (cost == 0) break;
+    }
+
+    return best_reg;
+  }
+
   private VarGenDescriptor varDescriptor(String var) {
     return variables.get(var);
   }
@@ -175,7 +256,16 @@ public class RegisterPool {
     return registers.get(reg);
   }
 
-  private void emit(NasmInstruction i) {
+  private boolean varNeedSaving(String var) {
+    VarGenDescriptor varD = varDescriptor(var);
+    return varD.size() == 1 && !varD.onMemory();
+  }
+
+  private boolean isDead(String var) {
+    return instruction.deadVars().contains(new TALocalVar(var));
+  }
+
+  public void emit(NasmInstruction i) {
     code.add(i);
   }
 
