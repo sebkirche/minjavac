@@ -1,12 +1,13 @@
 package analysis.symboltable;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.List;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import analysis.syntaxtree.Type;
 import analysis.syntaxtree.IdentifierType;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 public class ClassDescriptor {
   int size;
@@ -79,11 +80,28 @@ public class ClassDescriptor {
     return vars;
   }
 
+  public List<VariableDescriptor> getVariableDescriptors() {
+    List<String> sl = getVariables();
+    List<VariableDescriptor> l = new ArrayList<VariableDescriptor>(sl.size());
+
+    for (String name : sl)
+      l.add(getVarInScope(name));
+
+    return l;
+  }
+
   public VariableDescriptor getVar(String varName) {
     if (containsVar(varName))
       return variableMap.get(varName);
 
     return null;
+  }
+
+  public VariableDescriptor getVarInScope(String name) {
+    if (containsVar(name))
+      return getVar(name);
+    else
+      return SymbolTable.getInstance().getClass(parent()).getVarInScope(name);
   }
 
   public boolean containsVar(String varName) {
@@ -111,5 +129,34 @@ public class ClassDescriptor {
 
   public String parent() {
     return baseClass;
+  }
+
+  public List<String> getAccessibleMethodLabels() {
+    List<String> ml = new ArrayList<String>(10);
+
+    if (baseClass != null) {
+      ClassDescriptor base = SymbolTable.getInstance().getClass(baseClass);
+      ml.addAll(base.getAccessibleMethodLabels());
+    }
+
+    for (String m1 : getMethods()) {
+      boolean done = false;
+      String m1_label = getName() + "::" + m1;
+
+      for (int i = 0; i < ml.size() && !done; ++i) {
+        String m2 = ml.get(i);
+
+        if (m1.equals(Util.getDefinedName(m2))) {
+          ml.set(i, m1_label);
+          done = true;
+        }
+      }
+
+      if (!done) {
+        ml.add(m1_label);
+      }
+    }
+
+    return ml;
   }
 }

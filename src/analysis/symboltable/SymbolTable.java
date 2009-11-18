@@ -3,6 +3,7 @@ package analysis.symboltable;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 import analysis.syntaxtree.*;
 
 public class SymbolTable {
@@ -29,6 +30,10 @@ public class SymbolTable {
 
   public Set<String> getClasses() {
     return classMap.keySet();
+  }
+
+  public Collection<ClassDescriptor> getClassDescriptors() {
+    return classMap.values();
   }
 
   public boolean containsClass(String id) {

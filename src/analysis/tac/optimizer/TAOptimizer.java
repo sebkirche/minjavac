@@ -89,13 +89,14 @@ public class TAOptimizer {
     for (TABasicBlock block : code)
       block.accept(usedVars);
 
+    boolean[] visited = new boolean[code.size()];
+
     for (int i = 0; i < code.size(); ++i) {
       TABasicBlock block = code.get(i);
       
       Set<TALocalVar> candidates = new HashSet<TALocalVar>(block.writeVars());
       Set<TALocalVar> liveVars = block.liveVars();
 
-      boolean[] visited = new boolean[code.size()];
       for (int j = 0; j < code.size(); ++j) visited[j] = false;
 
       for (Integer j : graph[i])
@@ -106,6 +107,9 @@ public class TAOptimizer {
       block.accept(deadVars);
   }
 
+  /*
+   * dfs no flow graph do procedimento a partir do bloco i
+   */
   private static void livenessCalcRec(
           int i, boolean[] visited,
           List<TABasicBlock> code, List<Integer>[] graph,

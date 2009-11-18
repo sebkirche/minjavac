@@ -6,13 +6,11 @@ import analysis.typechecker.*;
 
 public class minjavac {
   public static void main(String[] args) throws Exception {
-    Parser parser = null ;
-
     if (args.length == 1) {
-        parser = new Parser(new java.io.FileInputStream(args[0]));
+      new Parser(new java.io.FileInputStream(args[0]));
     }
     else if (args.length == 0) {
-      parser = new Parser(System.in);
+      new Parser(System.in);
     }
     else {
       System.out.println(
@@ -21,10 +19,10 @@ public class minjavac {
       return;
     }
 
-    Program program = null ;
+    Program program = null;
 
     try {
-      program = parser.Goal();
+      program = Parser.Goal();
     }
     catch (ParseException e) {
       System.out.println(e.getMessage());
