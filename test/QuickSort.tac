@@ -5,7 +5,7 @@ IR:
 
 class QuickSort:
 
-procedure QuickSort::main
+procedure QuickSort#main
    # Block     : 0
    # adj       : []
    # write     : [.new_QS, .call]
@@ -16,7 +16,7 @@ procedure QuickSort::main
    save_context;
    param .new_QS;
    param 10;
-   .call := call QS::Start;
+   .call := call QS#Start;
    load_context;
    print .call;
 end
@@ -24,7 +24,7 @@ end
 
 class QS:
 
-procedure QS::Start
+procedure QS#Start
    # Block     : 0
    # adj       : []
    # write     : [.call, .sub, .call_A, .call_B, .call_C, aux01]
@@ -34,12 +34,12 @@ procedure QS::Start
    save_context;
    param this;
    param sz;
-   .call := call QS::Init;
+   .call := call QS#Init;
    load_context;
    aux01 := .call;
    save_context;
    param this;
-   .call_A := call QS::Print;
+   .call_A := call QS#Print;
    load_context;
    aux01 := .call_A;
    print 9999;
@@ -49,18 +49,18 @@ procedure QS::Start
    param this;
    param aux01;
    param 0;
-   .call_B := call QS::Sort;
+   .call_B := call QS#Sort;
    load_context;
    aux01 := .call_B;
    save_context;
    param this;
-   .call_C := call QS::Print;
+   .call_C := call QS#Print;
    load_context;
    aux01 := .call_C;
    return 0;
 end
 
-procedure QS::Sort
+procedure QS#Sort
    # Block     : 0
    # adj       : [20, 1]
    # write     : [t]
@@ -264,7 +264,7 @@ procedure QS::Sort
    .sub_B := sub i, 1;
    param .sub_B;
    param left;
-   .call := call QS::Sort;
+   .call := call QS#Sort;
    load_context;
    nt := .call;
    save_context;
@@ -272,7 +272,7 @@ procedure QS::Sort
    param right;
    .add_B := add i, 1;
    param .add_B;
-   .call_A := call QS::Sort;
+   .call_A := call QS#Sort;
    load_context;
    nt := .call_A;
    goto .if_next;
@@ -296,7 +296,7 @@ procedure QS::Sort
    return 0;
 end
 
-procedure QS::Print
+procedure QS#Print
    # Block     : 0
    # adj       : [1]
    # write     : [j]
@@ -336,7 +336,7 @@ procedure QS::Print
    return 0;
 end
 
-procedure QS::Init
+procedure QS#Init
    # Block     : 0
    # adj       : []
    # write     : [.new_array]
