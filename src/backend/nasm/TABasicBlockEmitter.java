@@ -1,9 +1,20 @@
 package backend.nasm;
 
+import java.util.List;
 import analysis.tac.*;
 import analysis.tac.instructions.*;
 
-public class BasicBlockEmitter implements TABasicBlockVisitor {
+public class TABasicBlockEmitter implements TABasicBlockVisitor {
+  private List<NasmInstruction> code;
+
+  public TABasicBlockEmitter(List<NasmInstruction> c) {
+    code = c;
+  }
+
+  private void emit(NasmInstruction i) {
+    code.add(i);
+  }
+
   public void visit(TABasicBlock block) {
     throw new UnsupportedOperationException("Not supported yet.");
   }

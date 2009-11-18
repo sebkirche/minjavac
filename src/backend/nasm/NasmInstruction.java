@@ -42,7 +42,7 @@ public class NasmInstruction {
         str = NasmUtils.stmtPad + "global " + text; break;
       case LABEL:
         str = NasmUtils.labelPad + text + ":"; break;
-      case INSTRUCTION:
+      case OP:
         str = NasmUtils.stmtPad + text; break;
       case COMMENT:
         str = "# " + text; break;

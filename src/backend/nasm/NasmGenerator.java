@@ -2,6 +2,7 @@ package backend.nasm;
 
 import java.util.*;
 import java.io.Writer;
+import analysis.tac.*;
 import analysis.symboltable.*;
 
 public class NasmGenerator {
@@ -46,7 +47,25 @@ public class NasmGenerator {
 
   private void emitMethodCode(MethodDescriptor method) {
     emit(Nasm.LABEL.make(method.getLabel()));
-    // here
+
+    // prologue
+    emit(Nasm.OP.make("push ebp"));
+    emit(Nasm.OP.make("mov ebp, esp"));
+    emit(Nasm.OP.make("sub esp, " + method.getLocalVars().size()));
+
+    // code
+    TAProcedure proc = TAModule.getInstance().getProcedure(method.getLabel());
+    TABasicBlockEmitter blockEmitter = new TABasicBlockEmitter(code);
+
+    for (TABasicBlock block : proc.getCode()) {
+      code.add(Nasm.OTHER.make("\n"));
+      block.accept(blockEmitter);
+    }
+
+    // epilogue
+    emit(Nasm.OP.make("mov esp, ebp"));
+    emit(Nasm.OP.make("pop ebp"));
+    emit(Nasm.OP.make("ret"));
   }
 
   private void emitAsmMain(ClassDescriptor mainClass) {

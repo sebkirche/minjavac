@@ -9,7 +9,7 @@ public enum Nasm {
   TEXT_SEGMENT,
   GLOBAL_SYMBOL,
   LABEL,
-  INSTRUCTION;
+  OP;
 
   public NasmInstruction make() {
     return make(null);

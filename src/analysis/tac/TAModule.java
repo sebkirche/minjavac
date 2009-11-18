@@ -68,6 +68,16 @@ public class TAModule {
     return null;
   }
 
+  public TAProcedure getProcedure(String label) {
+    for (TAClass c : classes) {
+      TAProcedure proc = c.getProcedure(label);
+      if (proc != null)
+        return proc;
+    }
+
+    return null;
+  }
+
   @Override
   public String toString() {
     String str = "";

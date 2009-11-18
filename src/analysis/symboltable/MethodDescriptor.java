@@ -4,9 +4,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
-import analysis.syntaxtree.Type;
 import java.util.Collection;
-import java.util.Set;
+import analysis.syntaxtree.Type;
 
 public class MethodDescriptor {
   String name;
