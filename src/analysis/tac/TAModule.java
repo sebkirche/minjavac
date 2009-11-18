@@ -30,7 +30,7 @@ public class TAModule {
   }
 
   public void startProcedure(String procName) {
-    String procLabel = openClass.getName() + "::" + procName;
+    String procLabel = openClass.getName() + "#" + procName;
     openProcedure = new TAProcedure(procLabel);
     instructions = new LinkedList<TAInstruction>();
   }

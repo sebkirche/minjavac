@@ -266,7 +266,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     MethodDescriptor methodD = symbolTable.getMethod(methodN, classN);
     String methodClassN = symbolTable.getMethodClass(classN, methodN).getName();
 
-    Label procLabel = new Label(methodClassN + "::" + methodN);
+    Label procLabel = new Label(methodClassN + "#" + methodN);
     
     TAVariable temp = NamePool.newVar("call", methodD.getReturnType());
     module.addInstruction(new ProcedureCall(temp, procLabel));
@@ -391,27 +391,27 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(VarDecl varD) {
-    throw new IllegalArgumentException("visit::VarDecl");
+    throw new IllegalArgumentException("visit#VarDecl");
   }
 
   public void visit(Formal param) {
-    throw new IllegalArgumentException("visit::Formal");
+    throw new IllegalArgumentException("visit#Formal");
   }
 
   public void visit(IntArrayType n) {
-    throw new IllegalArgumentException("visit::IntArrayType");
+    throw new IllegalArgumentException("visit#IntArrayType");
   }
 
   public void visit(BooleanType n) {
-    throw new IllegalArgumentException("visit::BooleanType");
+    throw new IllegalArgumentException("visit#BooleanType");
   }
 
   public void visit(IntegerType n) {
-    throw new IllegalArgumentException("visit::IntegerType");
+    throw new IllegalArgumentException("visit#IntegerType");
   }
 
   public void visit(IdentifierType n) {
-    throw new IllegalArgumentException("visit::IdentifierType");
+    throw new IllegalArgumentException("visit#IdentifierType");
   }
 
   private TAVariable getTAVariable(String name) {

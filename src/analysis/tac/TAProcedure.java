@@ -23,7 +23,7 @@ public class TAProcedure {
   }
 
   public String getName() {
-    return label.toString().split("::")[1].trim();
+    return label.toString().split("#")[1].trim();
   }
 
   public List<TABasicBlock> getCode() {

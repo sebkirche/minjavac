@@ -46,6 +46,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
     String param = mainC.argId.toString();
 
     symbolTable.addClass(name, null);
+    symbolTable.setMainClass(name);
     currentClass = symbolTable.getClass(name);
 
     currentClass.addMethod("main", new IdentifierType("void"));

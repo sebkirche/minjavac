@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import analysis.syntaxtree.Type;
+import java.util.Collection;
 import java.util.Set;
 
 public class MethodDescriptor {
@@ -26,6 +27,10 @@ public class MethodDescriptor {
     return name;
   }
 
+  public String getLabel() {
+    return classDescr.getName() + "#" + getName();
+  }
+
   public Type getReturnType() {
     return returnType;
   }
@@ -45,6 +50,10 @@ public class MethodDescriptor {
 
   public List<VariableDescriptor> getParameters() {
     return paramList;
+  }
+
+  public Collection<VariableDescriptor> getLocalVars() {
+    return localVarMap.values();
   }
 
   public VariableDescriptor getParameterAt(int i) {
@@ -75,10 +84,6 @@ public class MethodDescriptor {
     }
 
     return false;
-  }
-
-  public Set<String> getLocalVars() {
-    return localVarMap.keySet();
   }
 
   public VariableDescriptor getLocalVar(String varName) {

@@ -7,6 +7,7 @@ import java.util.Collection;
 import analysis.syntaxtree.*;
 
 public class SymbolTable {
+  private ClassDescriptor mainClass;
   private Map<String,ClassDescriptor> classMap;
 
   public SymbolTable() {
@@ -19,6 +20,14 @@ public class SymbolTable {
 
     classMap.put(id, new ClassDescriptor(id, parent));
     return true;
+  }
+
+  public void setMainClass(String name) {
+    mainClass = getClass(name);
+  }
+
+  public ClassDescriptor getMainClass() {
+    return mainClass;
   }
 
   public ClassDescriptor getClass(String id) {

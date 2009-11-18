@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Collection;
 import analysis.syntaxtree.Type;
 import analysis.syntaxtree.IdentifierType;
 
@@ -51,6 +52,10 @@ public class ClassDescriptor {
 
   public Set<String> getMethods() {
     return methodMap.keySet();
+  }
+
+  public Collection<MethodDescriptor> getMethodDescriptors() {
+    return methodMap.values();
   }
 
   public MethodDescriptor getMethod(String mName) {
@@ -141,7 +146,7 @@ public class ClassDescriptor {
 
     for (String m1 : getMethods()) {
       boolean done = false;
-      String m1_label = getName() + "::" + m1;
+      String m1_label = getName() + "#" + m1;
 
       for (int i = 0; i < ml.size() && !done; ++i) {
         String m2 = ml.get(i);

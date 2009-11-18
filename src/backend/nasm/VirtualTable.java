@@ -1,7 +1,7 @@
 package backend.nasm;
 
-import analysis.symboltable.Util;
 import java.util.List;
+import analysis.symboltable.Util;
 
 public class VirtualTable {
   private String className;
@@ -12,8 +12,12 @@ public class VirtualTable {
     methodLabels = methods;
   }
 
-  public String getClassName() {
-    return className;
+  public String getName() {
+    return className + "#vt";
+  }
+
+  public int getSize() {
+    return methodLabels.size();
   }
 
   public List<String> getMethodLabels() {
@@ -23,7 +27,6 @@ public class VirtualTable {
   public int getMethodPosition(String methodName) {
     for (int i = 0; i < methodLabels.size(); ++i) {
       String label = methodLabels.get(i);
-
       if (Util.getDefinedName(label).equals(methodName))
         return i;
     }
