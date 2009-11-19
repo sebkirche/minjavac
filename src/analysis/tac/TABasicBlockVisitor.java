@@ -9,7 +9,6 @@ public interface TABasicBlockVisitor {
   public void visit(Label label);
   public void visit(Operation operation);
   public void visit(ParameterSetup param);
-  public void visit(PrintInstruction print);
   public void visit(ProcedureCall proc);
   public void visit(Return returnInstr);
 }

@@ -19,7 +19,7 @@ public class RegisterPool {
     //registerNames.add("edi");
   }
 
-  private class VarGenDescriptor extends HashSet<String> {
+  public class VarGenDescriptor extends HashSet<String> {
     private boolean onMem;
 
     public VarGenDescriptor() {
@@ -66,7 +66,7 @@ public class RegisterPool {
     }
   }
 
-  private class RegGenDescriptor extends HashSet<String> {
+  public class RegGenDescriptor extends HashSet<String> {
     public void setOnly(String var) {
       clear();
       add(var);
@@ -229,11 +229,15 @@ public class RegisterPool {
       return '[' + varD.getMemoryId(var) + ']';
   }
 
+  public String minSpills(String deadVar) {
+    return minSpills(deadVar, emptySet());
+  }
+
   /**
    * returns the local best register for holding some new
    * value, disregarding the value of deadVar
    */
-  private String minSpills(String deadVar, Set<String> fr) {
+  public String minSpills(String deadVar, Set<String> fr) {
     int min_cost = Integer.MAX_VALUE;
     String best_reg = "";
 
@@ -258,11 +262,11 @@ public class RegisterPool {
     return best_reg;
   }
 
-  private VarGenDescriptor varDescriptor(String var) {
+  public VarGenDescriptor varDescriptor(String var) {
     return variables.get(var);
   }
 
-  private RegGenDescriptor regDescriptor(String reg) {
+  public RegGenDescriptor regDescriptor(String reg) {
     return registers.get(reg);
   }
 

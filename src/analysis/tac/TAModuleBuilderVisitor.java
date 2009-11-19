@@ -1,13 +1,11 @@
 package analysis.tac;
 
-import analysis.symboltable.ClassDescriptor;
 import java.util.List;
 import analysis.syntaxtree.*;
+import analysis.symboltable.*;
 import analysis.tac.variables.*;
-import analysis.tac.instructions.*;
 import analysis.visitors.Visitor;
-import analysis.symboltable.SymbolTable;
-import analysis.symboltable.MethodDescriptor;
+import analysis.tac.instructions.*;
 
 public class TAModuleBuilderVisitor implements Visitor {
   private TAModule module;
@@ -111,13 +109,30 @@ public class TAModuleBuilderVisitor implements Visitor {
 
   public void visit(Print printStmt) {
     printStmt.intExpr.accept(this);
-    module.addInstruction(new PrintInstruction(lastTemp));
+
+    module.addInstruction(new Action(Opcode.SAVE_CTX));
+    module.addInstruction(new ParameterSetup(lastTemp));
+
+    module.addInstruction(new ProcedureCall(
+      lastTemp, new Label("#print_int")
+    ));
+    
+    module.addInstruction(new Action(Opcode.LOAD_CTX));
   }
 
   public void visit(Assign assignStmt) {
     assignStmt.valueExpr.accept(this);
 
-    TAVariable destiny = getTAVariable(assignStmt.varId.name);
+    String varN = assignStmt.varId.name;
+    String classN = module.getOpenClass().getName();
+    ClassDescriptor cd = symbolTable.getClass(classN);
+
+    TAVariable destiny;
+    if (cd.isInScope(varN))
+      destiny = new TAFieldVar(varN);
+    else
+      destiny = getTAVariable(varN);
+
     module.addInstruction(new Copy(destiny, lastTemp));
   }
 
@@ -161,9 +176,18 @@ public class TAModuleBuilderVisitor implements Visitor {
     lessExpr.e2.accept(this);
     b = lastTemp;
 
-    module.addInstruction(new Operation(
-      Opcode.IS_LESS, temp, a, b
+    Label trueL = NamePool.newLabel("is_less");
+    Label nextL = NamePool.newLabel("next");
+
+    module.addInstruction(new ConditionalJump(
+      Condition.LESS_THAN, a, b, trueL
     ));
+
+    module.addInstruction(new Copy(temp, new TAConstantVar(0)));
+    module.addInstruction(new Jump(nextL));
+    module.addInstruction(trueL);
+    module.addInstruction(new Copy(temp, new TAConstantVar(1)));
+    module.addInstruction(nextL);
 
     lastTemp = temp;
   }
@@ -252,7 +276,6 @@ public class TAModuleBuilderVisitor implements Visitor {
     TAVariable objectRef = lastTemp;
 
     module.addInstruction(new Action(Opcode.SAVE_CTX));
-    module.addInstruction(new ParameterSetup(objectRef));
 
     List<Exp> params = callStmt.paramExprList.getList();
     for (int i = params.size()-1; i >= 0; --i) {
@@ -260,15 +283,18 @@ public class TAModuleBuilderVisitor implements Visitor {
       module.addInstruction(new ParameterSetup(lastTemp));
     }
 
+    module.addInstruction(new ParameterSetup(
+      new TAThisReferenceVar(objectRef)
+    ));
+
     IdentifierType objType = (IdentifierType)callStmt.objectExpr.getType();
     String classN = objType.className;
     String methodN = callStmt.methodId.name;
     MethodDescriptor methodD = symbolTable.getMethod(methodN, classN);
-    String methodClassN = symbolTable.getMethodClass(classN, methodN).getName();
 
-    Label procLabel = new Label(methodClassN + "#" + methodN);
-    
+    Label procLabel = new Label(classN + "#" + methodN);
     TAVariable temp = NamePool.newVar("call", methodD.getReturnType());
+
     module.addInstruction(new ProcedureCall(temp, procLabel));
     module.addInstruction(new Action(Opcode.LOAD_CTX));
 
@@ -297,9 +323,12 @@ public class TAModuleBuilderVisitor implements Visitor {
     newArray.sizeExpr.accept(this);
     TAVariable size = lastTemp;
 
-    module.addInstruction(new Operation(
-     Opcode.NEW_ARRAY, temp, size
+    module.addInstruction(new Action(Opcode.SAVE_CTX));
+    module.addInstruction(new ParameterSetup(size));
+    module.addInstruction(new ProcedureCall(
+      temp, new Label("#new_array")
     ));
+    module.addInstruction(new Action(Opcode.LOAD_CTX));
 
     lastTemp = temp;
   }
@@ -309,8 +338,11 @@ public class TAModuleBuilderVisitor implements Visitor {
     Type tempT = new IdentifierType(classN);
     TAVariable temp = NamePool.newVar("new_" + newObj.classNameId, tempT);
 
-    module.addInstruction(new Operation(
-      Opcode.NEW_OBJECT, temp, new TAOtherVar(newObj.classNameId.name)
+    String procLabel = "#new_" + newObj.classNameId;
+
+    module.addInstruction(new Action(Opcode.SAVE_CTX));
+    module.addInstruction(new ProcedureCall(
+      temp, new Label(procLabel)
     ));
             
     lastTemp = temp;
@@ -418,9 +450,14 @@ public class TAModuleBuilderVisitor implements Visitor {
     TAClass c = module.getOpenClass();
     ClassDescriptor cd = symbolTable.getClass(c.getName());
     
-    if (cd.isInScope(name))
-      return new TAFieldVar(name);
-    else
+    if (!cd.isInScope(name))
       return new TALocalVar(name);
+
+    TAFieldVar fv = new TAFieldVar(name);
+    TAVariable temp = NamePool.newVar(name, cd.getVarInScope(name).type());
+
+    module.addInstruction(new Copy(temp, fv));
+
+    return temp;
   }
 }

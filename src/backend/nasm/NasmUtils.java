@@ -76,10 +76,12 @@ public final class NasmUtils {
         return getSourceVarHandle(var, forbiddenRegs);
     }
     else {
-      if (!needsReg)
-        throw new IllegalArgumentException("getVariableHandle");
+      if (var instanceof TALocalVar) {
+        String varN = var.toString();
+        return pool.getRegForDestiny(varN, forbiddenRegs);
+      }
 
-      return pool.getRegForDestiny("", forbiddenRegs);
+      return getSpecialVarHandle(var, forbiddenRegs);
     }
   }
 
@@ -91,18 +93,17 @@ public final class NasmUtils {
     if (isMemoryHandle(handle)) {
       List<String> regs = RegisterPool.registerNames;
 
+      if (var instanceof TALocalVar) {
+        String reg = pool.minSpills(var.toString(), forbiddenReg);
+        pool.prepareSource(reg, var.toString());
+        return reg;
+      }
+
       for (int i = regs.size()-1; i >= 0; --i) {
         String reg = regs.get(i);
         if (forbiddenReg.contains(reg)) continue;
-
-        if (var instanceof TALocalVar) {
-          pool.prepareSource(reg, var.toString());
-        }
-        else {
-          pool.spillRegister(reg);
-          pool.emit(Nasm.OP.make("mov " + reg + ", " + handle));
-        }
-
+        pool.spillRegister(reg);
+        pool.emit(Nasm.OP.make("mov " + reg + ", " + handle));
         return reg;
       }
     }
@@ -112,12 +113,19 @@ public final class NasmUtils {
 
   private static String getSourceVarHandle(
           TAVariable var, Set<String> forbiddenRegs) {
+
     if (var instanceof TALocalVar) {
       String reg = pool.getRegForSource(var.toString(), forbiddenRegs);
       pool.prepareSource(reg, var.toString());
       return reg;
     }
-    else if (var instanceof TAConstantVar) {
+
+    return getSpecialVarHandle(var, forbiddenRegs);
+  }
+
+  private static String getSpecialVarHandle(
+          TAVariable var, Set<String> forbiddenRegs) {
+    if (var instanceof TAConstantVar) {
       return var.toString();
     }
     else if (var instanceof TAFieldVar) {
@@ -146,7 +154,7 @@ public final class NasmUtils {
         indexHandle = "edi";
       }
 
-      return String.format("[%s+4*%s]", arrayHandle, indexHandle);
+      return String.format("[%s+4*%s+1]", arrayHandle, indexHandle);
     }
 
     return null;
