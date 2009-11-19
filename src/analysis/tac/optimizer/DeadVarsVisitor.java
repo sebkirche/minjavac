@@ -4,6 +4,7 @@ import analysis.tac.*;
 import analysis.tac.instructions.*;
 import analysis.tac.variables.TAArrayCellVar;
 import analysis.tac.variables.TALocalVar;
+import analysis.tac.variables.TAThisReferenceVar;
 import analysis.tac.variables.TAVariable;
 import java.util.HashSet;
 import java.util.List;
@@ -69,11 +70,15 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
       visitRead(((TAArrayCellVar)v).getArrayVar());
     } else if (v instanceof TALocalVar) {
       deadVars.remove((TALocalVar)v);
+    } else if (v instanceof TAThisReferenceVar) {
+      visitRead(((TAThisReferenceVar)v).getReference());
     }
   }
 
   private void visitWrite(TAVariable v) {
-    if (v instanceof TAArrayCellVar) {
+    if (v instanceof TAThisReferenceVar) {
+      visitWrite(((TAThisReferenceVar)v).getReference());
+    } else if (v instanceof TAArrayCellVar) {
       visitRead(((TAArrayCellVar)v).getIndexVar());
       visitRead(((TAArrayCellVar)v).getArrayVar());
     } else if (v instanceof TALocalVar) {

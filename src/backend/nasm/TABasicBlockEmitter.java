@@ -23,6 +23,11 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   }
 
   private void emit(NasmInstruction i) {
+    TAInstruction current = pool.getCurrentInstruction();
+
+    if (current != null)
+      i.setComment(current.toString());
+
     code.add(i);
   }
 
@@ -58,13 +63,13 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
           pool.spillRegister("ecx");
 
         emit(Nasm.OP.make("push edx"));
-        
-        pool.spillRegister("eax");
         numParams = 0;
         break;
 
       case LOAD_CTX:
-        emit(Nasm.OP.make("add esp, " + 4 * numParams));
+        if (numParams != 0)
+          emit(Nasm.OP.make("add esp, " + 4 * numParams));
+        
         emit(Nasm.OP.make("pop edx"));
 
         if (savedEcx)
@@ -78,8 +83,6 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   }
 
   public void visit(ParameterSetup param) {
-    ++numParams;
-
     if (param.getParameter() instanceof TAThisReferenceVar) {
       TAThisReferenceVar trv = (TAThisReferenceVar)param.getParameter();
       String handle = varHandle(trv.getReference(), SOURCE);
@@ -87,6 +90,8 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
       emit(Nasm.OP.make("mov edx, " + handle));
       return;
     }
+    
+    ++numParams;
 
     String handle = varHandle(param.getParameter(), SOURCE);
 
@@ -225,6 +230,8 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   }
   
   public void visit(ProcedureCall proc) {
+    pool.spillRegister("eax");
+
     String label = proc.getProcedure().getLabel();
 
     if (!label.startsWith("_")) {
@@ -235,11 +242,13 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
 
       int methodPos = vt.getMethodPosition(methodN);
       
-      emit(Nasm.OP.make("call [edx+" + methodPos + "]"));
+      emit(Nasm.OP.make("call [edx+" + 4*methodPos + "]"));
     }
     else {
       emit(Nasm.OP.make("call " + label));
     }
+
+    pool.prepareDestiny("eax", proc.getDestiny().toString());
   }
 
   private VirtualTable getVirtualTableForClass(String classN) {
@@ -255,5 +264,9 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     }
 
     return vtl.get(i);
+  }
+
+  private void debug(String msg) {
+    code.add(Nasm.COMMENT.make(msg));
   }
 }

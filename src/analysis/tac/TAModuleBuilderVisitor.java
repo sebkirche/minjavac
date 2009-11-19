@@ -344,6 +344,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(new ProcedureCall(
       temp, new Label(procLabel)
     ));
+    module.addInstruction(new Action(Opcode.LOAD_CTX));
             
     lastTemp = temp;
   }

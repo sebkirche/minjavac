@@ -23,6 +23,10 @@ public class NasmInstruction {
     return text;
   }
 
+  public void setComment(String c) {
+    comment = c;
+  }
+
   public String getComment() {
     return comment;
   }
@@ -45,13 +49,14 @@ public class NasmInstruction {
       case OP:
         str = NasmUtils.stmtPad + text; break;
       case COMMENT:
-        str = "; " + text; break;
+        str = NasmUtils.stmtPad + "; " + text; break;
       case OTHER:
         str = text; break;
     }
 
-    if (!comment.isEmpty())
-      str += " ; " + comment;
+    if (!comment.isEmpty()) {
+      str = String.format("%-25s ; %s", str, comment);
+    }
 
     return str;
   }

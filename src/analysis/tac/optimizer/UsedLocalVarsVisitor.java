@@ -65,16 +65,20 @@ class UsedLocalVarsVisitor implements TABasicBlockVisitor {
       block.readVars().add((TALocalVar)v);
       seen.add(v);
     }
+    else if (v instanceof TAThisReferenceVar) {
+      visitRead(((TAThisReferenceVar)v).getReference());
+    }
   }
 
   private void visitWrite(TAVariable v) {
     if (v instanceof TAArrayCellVar) {
       visitRead(((TAArrayCellVar)v).getIndexVar());
       visitRead(((TAArrayCellVar)v).getArrayVar());
-    }
-    if (v instanceof TALocalVar) {
+    } else if (v instanceof TALocalVar) {
       block.writeVars().add((TALocalVar)v);
       seen.add(v);
+    } else if (v instanceof TAThisReferenceVar) {
+      visitWrite(((TAThisReferenceVar)v).getReference());
     }
   }
 }

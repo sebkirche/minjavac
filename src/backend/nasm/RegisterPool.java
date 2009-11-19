@@ -104,6 +104,10 @@ public class RegisterPool {
     instruction = i;
   }
 
+  public TAInstruction getCurrentInstruction() {
+    return instruction;
+  }
+
   /**
    * descarta valores antigos desta variável
    */
@@ -134,11 +138,14 @@ public class RegisterPool {
    */
   public void removeFromRegister(String reg, String var) {
     if (isDead(var)) {
+      debug("dead : " + var);
       varDescriptor(var).clear();
     } else {
       VarGenDescriptor varD = varDescriptor(var);
 
       if (varD.size() == 1 && !varD.onMemory()) {
+        debug("spilling " + varD);
+
         String mov = String.format(
           "mov [%s], %s", varD.getMemoryId(var), reg
         );
@@ -284,6 +291,10 @@ public class RegisterPool {
 
   public void emit(NasmInstruction i) {
     code.add(i);
+  }
+
+  private void debug(String msg) {
+    code.add(Nasm.COMMENT.make(msg));
   }
 
   private Set<String> copy(Set<String> s) {

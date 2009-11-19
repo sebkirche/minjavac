@@ -18,13 +18,13 @@ public class NasmGenerator {
     NasmUtils.calculateOffsets();
     SymbolTable symT = SymbolTable.getInstance();
 
-    emit(Nasm.COMMENT.make("vt definitions"));
+    emit(Nasm.OTHER.make("; vt definitions"));
     emit(Nasm.DATA_SEGMENT.make());
     
     emitVirtualTableDefinitions();
 
     emit(Nasm.OTHER.make("\n"));
-    emit(Nasm.COMMENT.make("code"));
+    emit(Nasm.OTHER.make("; code"));
     emit(Nasm.TEXT_SEGMENT.make());
     emit(Nasm.OTHER.make(""));
 
@@ -34,6 +34,14 @@ public class NasmGenerator {
           emit(Nasm.LABEL.make("_main"));
 
         emitMethodCode(m);
+
+        if (c == symT.getMainClass()) {
+          emit(Nasm.OTHER.make(""));
+          emit(Nasm.OP.make("mov esp, ebp"));
+          emit(Nasm.OP.make("pop ebp"));
+          emit(Nasm.OP.make("ret"));
+        }
+
         emit(Nasm.OTHER.make("\n"));
       }
     }
@@ -59,7 +67,9 @@ public class NasmGenerator {
     // prologue
     emit(Nasm.OP.make("push ebp"));
     emit(Nasm.OP.make("mov ebp, esp"));
-    emit(Nasm.OP.make("sub esp, " + method.getLocalVars().size()));
+
+    if (!method.getLocalVars().isEmpty())
+      emit(Nasm.OP.make("sub esp, " + 4*method.getLocalVars().size()));
 
     // code
     TAProcedure proc = TAModule.getInstance().getProcedure(method.getLabel());
