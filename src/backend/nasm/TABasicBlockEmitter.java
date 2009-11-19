@@ -156,9 +156,9 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
 
     String hs = varHandle(s, SOURCE, ON_REGISTER);
 
-    if (!d.isLocalVar()) {
+    if (!d.isLocalVar() || !isRegister(hs)) {
       String hd = varHandle(d, DESTINY);
-      emit(Nasm.OP.make("mov " + hd + ", " + hd));
+      emit(Nasm.OP.make("mov " + hd + ", " + hs));
     }
     else {
       String destN = d.toString();

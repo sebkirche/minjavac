@@ -51,10 +51,6 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
     visitRead(param.getParameter());
   }
 
-  public void visit(PrintInstruction print) {
-    visitRead(print.getVar());
-  }
-
   public void visit(ProcedureCall proc) {
     visitWrite(proc.getDestiny());
   }

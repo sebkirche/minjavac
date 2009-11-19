@@ -13,8 +13,9 @@ public class NamePool {
   }
 
   public static TAVariable newVar(String s, Type t) {
-    TAModule.getInstance().addTemporaryVar(s, t);
-    return new TALocalVar(nextName(s));
+    String varName = nextName(s);
+    TAModule.getInstance().addTemporaryVar(varName, t);
+    return new TALocalVar(varName);
   }
 
   public static String nextName(String s) {

@@ -4,9 +4,11 @@ import java.util.*;
 import java.io.Writer;
 import analysis.tac.*;
 import analysis.symboltable.*;
+import java.io.IOException;
 
 public class NasmGenerator {
   private List<NasmInstruction> code;
+  private List<VirtualTable> virtualTables;
 
   public NasmGenerator() {
     code = new ArrayList<NasmInstruction>(400);
@@ -25,21 +27,23 @@ public class NasmGenerator {
     emit(Nasm.TEXT_SEGMENT.make());
     emit(Nasm.OTHER.make("\n"));
 
-    for (ClassDescriptor c : symT.getClassDescriptors())
-      for (MethodDescriptor m : c.getMethodDescriptors())
-        emitMethodCode(m);
+    for (ClassDescriptor c : symT.getClassDescriptors()) {
+      for (MethodDescriptor m : c.getMethodDescriptors()) {
+        if (c == symT.getMainClass())
+          emit(Nasm.LABEL.make("_main"));
 
-    emit(Nasm.COMMENT.make("Main definition:"));
-    emitAsmMain(symT.getMainClass());
+        emitMethodCode(m);
+      }
+    }
   }
 
   private void emitVirtualTableDefinitions() {
-    List<VirtualTable> virtualTables = NasmUtils.buildVirtualTables();
+    virtualTables = NasmUtils.buildVirtualTables();
 
     for (VirtualTable vt : virtualTables) {
       String label = vt.getName();
       String array = vt.getMethodLabels().toString();
-      array = array.substring(1, vt.getSize()-1);
+      array = array.substring(1, array.length()-1);
 
       emit(Nasm.OTHER.make(label + ": dd " + array));
     }
@@ -55,7 +59,9 @@ public class NasmGenerator {
 
     // code
     TAProcedure proc = TAModule.getInstance().getProcedure(method.getLabel());
-    TABasicBlockEmitter blockEmitter = new TABasicBlockEmitter(code);
+    TABasicBlockEmitter blockEmitter = new TABasicBlockEmitter(
+      code, virtualTables
+    );
 
     for (TABasicBlock block : proc.getCode()) {
       code.add(Nasm.OTHER.make("\n\n"));
@@ -68,15 +74,12 @@ public class NasmGenerator {
     emit(Nasm.OP.make("ret"));
   }
 
-  private void emitAsmMain(ClassDescriptor mainClass) {
-    
-  }
-
   private void emit(NasmInstruction i) {
     code.add(i);
   }
 
-  public void writeTo(String sourceFilename, Writer out) {
-    // nasm output
+  public void writeTo(Writer out) throws IOException {
+    for (NasmInstruction i : code)
+      out.write(i + "\n");
   }
 }

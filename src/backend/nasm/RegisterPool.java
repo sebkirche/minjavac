@@ -82,6 +82,9 @@ public class RegisterPool {
   public RegisterPool(MethodDescriptor methodD, List<NasmInstruction> c) {
     code = c;
     instruction = null;
+    registers = new HashMap<String,RegGenDescriptor>();
+    variables = new HashMap<String,VarGenDescriptor>();
+    descriptors = new HashMap<String,VariableDescriptor>();
 
     for (String reg : registerNames)
       registers.put(reg, new RegGenDescriptor());

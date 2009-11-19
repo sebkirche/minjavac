@@ -164,6 +164,10 @@ public final class NasmUtils {
     return handle.startsWith("[");
   }
 
+  public static boolean isRegister(String handle) {
+    return RegisterPool.registerNames.contains(handle);
+  }
+
   public static Set<String> emptySet() {
     return new HashSet<String>();
   }
