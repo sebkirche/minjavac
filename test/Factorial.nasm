@@ -3,7 +3,6 @@
 ; vt definitions
 segment .data
  Factorial@@vt   : dd Factorial@main
- Fac2@@vt        : dd Fac@ComputeFac, Fac2@method
  Fac@@vt         : dd Fac@ComputeFac
 
 
@@ -14,32 +13,25 @@ segment .text
  Factorial@main:
    push ebp
    mov ebp, esp
-   sub esp, 2
+   sub esp, 8
 
-   push edx
-   call _new_Fac
-   push edx
-   push 10
-   mov ebx, [ebp-8]
-   mov edx, ebx
-   call [edx+0]
-   add esp, 8
-   pop edx
-   push edx
-   mov ebx, [ebp-4]
-   push ebx
-   call _print_int
-   add esp, 4
-   pop edx
+   push edx               ; save_context
+   call _new_Fac          ; .new_Fac := call _new_Fac
+   pop edx                ; load_context
+   push edx               ; save_context
+   push 10                ; param 10
+   mov edx, eax           ; param .new_Fac
+   ; dead : .new_Fac
+   call [edx+0]           ; .call := call Fac@ComputeFac
+   add esp, 4             ; load_context
+   pop edx                ; load_context
+   push edx               ; save_context
+   push eax               ; param .call
+   ; dead : .call
+   call _print_int        ; .call := call _print_int
+   add esp, 4             ; load_context
+   pop edx                ; load_context
 
-
- Fac2@method:
-   push ebp
-   mov ebp, esp
-   sub esp, 0
-
-   mov [edx+4], 2
-   mov eax, 4
    mov esp, ebp
    pop ebp
    ret
@@ -48,51 +40,11 @@ segment .text
  Fac@ComputeFac:
    push ebp
    mov ebp, esp
-   sub esp, 8
 
-   push edx
-   push 3
-   call _new_array
-   add esp, 4
-   pop edx
-   mov ebx, [ebp-4]
-   mov ecx, 0
-   add ecx, 1
-   mov ecx, [ebp-24]
-   mov [ebx+4*ecx+1], 3
    mov ebx, [ebp+8]
-   cmp ebx, 1
-   jae .if_false
-
-   mov ebx, 1
-   jmp .if_next
-
- .if_false:
-   mov ebx, [ebp+8]
-   mov ecx, ebx
-   add ecx, 0
-   push edx
-   mov ebx, [ebp+8]
-   mov ecx, ebx
-   sub ecx, 1
-   mov ebx, [ebp-20]
-   push ebx
-   mov edx, edx
-   call [edx+0]
-   add esp, 8
-   pop edx
-   mov ebx, [ebp-12]
-   mov ecx, [ebp-8]
-   mov eax, ebx
-   imul eax, ecx
-   mov ebx, [ebp-16]
-   mov [ebp-28], ebx
-
- .if_next:
-   mov ebx, [ebp-28]
-   mov eax, ebx
-   mov esp, ebp
-   pop ebp
-   ret
+   mov eax, ebx           ; return num
+   mov esp, ebp           ; return num
+   pop ebp                ; return num
+   ret                    ; return num
 
 

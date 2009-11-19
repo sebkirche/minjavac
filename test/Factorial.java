@@ -6,10 +6,8 @@ class Factorial {
 }
 
 class Fac {
-  int ops;
-
   public int ComputeFac(int num) {
-    int num_aux;
+    /*int num_aux;
     int[] x;
     x = new int[3];
     x[0 + 1] = 3;
@@ -19,12 +17,14 @@ class Fac {
       num_aux = (num+0) * (this.ComputeFac(num - 1));
     }
     return num_aux;
-  }
+  }*/
+  return num;
 }
-
+/*
 class Fac2 extends Fac {
   public int method() {
     ops = 2;
     return 4;
   }
+*/
 }
