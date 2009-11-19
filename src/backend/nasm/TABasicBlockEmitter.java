@@ -2,7 +2,9 @@ package backend.nasm;
 
 import java.util.List;
 import analysis.tac.*;
+import analysis.tac.variables.*;
 import analysis.tac.instructions.*;
+import static backend.nasm.NasmUtils.*;
 import analysis.symboltable.MethodDescriptor;
 
 public class TABasicBlockEmitter implements TABasicBlockVisitor {
@@ -23,6 +25,9 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   public void visit(TABasicBlock block, MethodDescriptor m) {
     methodD = m;
     pool = new RegisterPool(methodD, code);
+
+    NasmUtils.setRegisterPool(pool);
+    NasmUtils.setMethodDescriptor(methodD);
 
     for (Label l : block.labels())
       emit(Nasm.LABEL.make(l.toString()));
@@ -51,6 +56,7 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
         pool.spillRegister("eax");
         emit(Nasm.OP.make("push edx"));
         numParams = 0;
+        break;
 
       case LOAD_CTX:
         emit(Nasm.OP.make("add esp, " + 4 * numParams));
@@ -61,17 +67,17 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
 
         if (savedEbx)
           emit(Nasm.OP.make("pop ebx"));
+
+        break;
     }
   }
 
   public void visit(ParameterSetup param) {
     ++numParams;
 
-    String paramHandle = NasmUtils.getVariableHandle(
-      param.getParameter(), pool, methodD
-    );
+    String paramHandle = varHandle(param.getParameter(), SOURCE);
 
-    if (NasmUtils.isMemoryHandle(paramHandle))
+    if (isMemoryHandle(paramHandle))
       paramHandle = "dword " + paramHandle;
 
     emit(Nasm.OP.make("push " + paramHandle));
@@ -85,17 +91,12 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     if (jump.isConditionalJump()) {
       ConditionalJump cj = (ConditionalJump)jump;
 
-      String handleA = NasmUtils.getVariableHandleOnRegister(
-        cj.getA(), pool, methodD, ""
-      );
+      String handleA = varHandle(cj.getA(), SOURCE, ON_REGISTER), handleB;
 
-      String handleB = null;
-
-      if (cj.getB() != null) {
-        handleB = NasmUtils.getVariableHandle(cj.getB(), pool, methodD);
-      } else{
+      if (cj.getB() != null)
+        handleB = varHandle(cj.getB(), SOURCE, ANY, unitSet(handleA));
+      else
         handleB = "0";
-      }
 
       emit(Nasm.OP.make("cmp " + handleA + ", " + handleB));
 
@@ -117,27 +118,39 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
       emit(Nasm.OP.make(jump_op + " " + cj.getTarget()));
     }
     else {
-      emit(Nasm.OP.make("goto " + jump.getTarget()));
+      emit(Nasm.OP.make("jmp " + jump.getTarget()));
     }
   }
 
-  public void visit(Return returnInstr) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void visit(Return ret) {
+    TAVariable var = ret.getReturnVariable();
+
+    String handle = varHandle(var, SOURCE);
+
+    if (!handle.equals("eax")) {
+      pool.spillRegister("eax");
+      Nasm.OP.make("mov eax, " + handle);
+    }
+
+    Nasm.OP.make("mov esp, ebp");
+    Nasm.OP.make("pop ebp");
+    Nasm.OP.make("ret");
   }
   
   public void visit(Copy copy) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    /*TAVariable s = copy.getSource();
+    TAVariable d = copy.getDestiny();*/
   }
 
   public void visit(Operation operation) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  public void visit(PrintInstruction print) {
+  public void visit(ProcedureCall proc) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  public void visit(ProcedureCall proc) {
+  public void visit(PrintInstruction print) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 }

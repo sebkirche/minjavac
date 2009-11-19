@@ -184,15 +184,23 @@ public class RegisterPool {
   }
 
   public String getRegForDestiny(String var) {
-    return minSpills(var);
+    return getRegForDestiny(var, emptySet());
+  }
+
+  public String getRegForDestiny(String var, Set<String> fr) {
+    return minSpills(var, fr);
   }
 
   public String getRegForSource(String var) {
+    return getRegForSource(var, emptySet());
+  }
+
+  public String getRegForSource(String var, Set<String> fr) {
     for (String reg : registerNames)
       if (regDescriptor(reg).contains(var))
         return reg;
 
-    return minSpills("");
+    return minSpills("", fr);
   }
 
   public void saveForExit(TABasicBlock block) {
@@ -225,11 +233,13 @@ public class RegisterPool {
    * returns the local best register for holding some new
    * value, disregarding the value of deadVar
    */
-  private String minSpills(String deadVar) {
+  private String minSpills(String deadVar, Set<String> fr) {
     int min_cost = Integer.MAX_VALUE;
     String best_reg = "";
 
     for (String reg : registerNames) {
+      if (fr.contains(reg)) continue;
+
       int cost = 0;
 
       for (String var : regDescriptor(reg)) {
@@ -271,5 +281,9 @@ public class RegisterPool {
 
   private Set<String> copy(Set<String> s) {
     return new HashSet<String>(s);
+  }
+
+  private Set<String> emptySet() {
+    return new HashSet<String>();
   }
 }

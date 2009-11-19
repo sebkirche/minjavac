@@ -58,7 +58,7 @@ public class NasmGenerator {
     TABasicBlockEmitter blockEmitter = new TABasicBlockEmitter(code);
 
     for (TABasicBlock block : proc.getCode()) {
-      code.add(Nasm.OTHER.make("\n"));
+      code.add(Nasm.OTHER.make("\n\n"));
       blockEmitter.visit(block, method);
     }
 

@@ -4,7 +4,7 @@ import java.util.*;
 import analysis.symboltable.*;
 import analysis.tac.variables.*;
 
-public class NasmUtils {
+public final class NasmUtils {
   public static void calculateOffsets() {
     SymbolTable symT = SymbolTable.getInstance();
 
@@ -53,15 +53,47 @@ public class NasmUtils {
     return vtl;
   }
 
-  public static String getVariableHandleOnRegister(
-        TAVariable var, RegisterPool pool,
-        MethodDescriptor methodD, String forbiddenReg) {
+  public static String varHandle(TAVariable var, boolean isSource) {
+    return varHandle(
+      var, isSource, ANY
+    );
+  }
 
-    String handle = getVariableHandle(var, pool, methodD);
+  public static String varHandle(
+        TAVariable var, boolean isSource, boolean needsReg) {
+
+    return varHandle(var, isSource, needsReg, emptySet());
+  }
+
+  public static String varHandle(
+        TAVariable var, boolean isSource, boolean needsReg,
+        Set<String> forbiddenRegs) {
+
+    if (isSource) {
+      if (needsReg)
+        return getSourceVarHandleOnRegister(var, forbiddenRegs);
+      else
+        return getSourceVarHandle(var, forbiddenRegs);
+    }
+    else {
+      if (!needsReg)
+        throw new IllegalArgumentException("getVariableHandle");
+
+      return pool.getRegForDestiny("", forbiddenRegs);
+    }
+  }
+
+  private static String getSourceVarHandleOnRegister(
+        TAVariable var, Set<String> forbiddenReg) {
+
+    String handle = getSourceVarHandle(var, forbiddenReg);
 
     if (isMemoryHandle(handle)) {
-      for (String reg : RegisterPool.registerNames) {
-        if (reg.equals(forbiddenReg)) continue;
+      List<String> regs = RegisterPool.registerNames;
+
+      for (int i = regs.size()-1; i >= 0; --i) {
+        String reg = regs.get(i);
+        if (forbiddenReg.contains(reg)) continue;
 
         if (var instanceof TALocalVar) {
           pool.prepareSource(reg, var.toString());
@@ -78,11 +110,12 @@ public class NasmUtils {
     return handle;
   }
 
-  public static String getVariableHandle(
-        TAVariable var, RegisterPool pool, MethodDescriptor methodD) {
-
+  private static String getSourceVarHandle(
+          TAVariable var, Set<String> forbiddenRegs) {
     if (var instanceof TALocalVar) {
-      return pool.getVariableHandle(var.toString());
+      String reg = pool.getRegForSource(var.toString(), forbiddenRegs);
+      pool.prepareSource(reg, var.toString());
+      return reg;
     }
     else if (var instanceof TAConstantVar) {
       return var.toString();
@@ -98,13 +131,10 @@ public class NasmUtils {
     else if (var instanceof TAArrayCellVar) {
       TAArrayCellVar cv = (TAArrayCellVar)var;
 
-      String arrayHandle = getVariableHandle(
-        cv.getArrayVar(), pool, methodD
-      );
-
-      String indexHandle = getVariableHandle(
-        cv.getIndexVar(), pool, methodD
-      );
+      String arrayHandle = getSourceVarHandle(cv.getArrayVar(), forbiddenRegs);
+      Set<String> fr = new HashSet<String>(forbiddenRegs);
+      fr.add(arrayHandle);
+      String indexHandle = getSourceVarHandle(cv.getIndexVar(), fr);
 
       if (isMemoryHandle(arrayHandle)) {
         pool.emit(Nasm.OP.make("mov esi, " + arrayHandle));
@@ -126,6 +156,31 @@ public class NasmUtils {
     return handle.startsWith("[");
   }
 
+  public static Set<String> emptySet() {
+    return new HashSet<String>();
+  }
+
+  public static Set<String> unitSet(String str) {
+    Set<String> s = emptySet();
+    s.add(str);
+    return s;
+  }
+
+  public static void setRegisterPool(RegisterPool p) {
+    pool = p;
+  }
+
+  public static void setMethodDescriptor(MethodDescriptor md) {
+    methodD = md;
+  }
+
+  private static RegisterPool pool;
+  private static MethodDescriptor methodD;
+
   public static final String labelPad = " ";
   public static final String stmtPad = "   ";
+  public static final boolean SOURCE = true;
+  public static final boolean DESTINY = false;
+  public static final boolean ON_REGISTER = true;
+  public static final boolean ANY = false;
 }
