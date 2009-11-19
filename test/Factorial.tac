@@ -1,37 +1,39 @@
-Building symbol table...
-Typechecking...
-Building IR...
-IR:
-
 class Factorial:
 
-procedure Factorial::main
+procedure Factorial#main
    # Block     : 0
    # adj       : []
    # write     : [.call, .new_Fac]
-   # read      : [.call, .new_Fac]
+   # read      : [.call]
    # firstRead : []
    # live      : []
-   .new_Fac := new Fac;
    save_context;
-   param .new_Fac;
+   .new_Fac := call #new_Fac;
+   save_context;
    param 10;
-   .call := call Fac::ComputeFac;
+   param .new_Fac;
+   .call := call Fac#ComputeFac;
    load_context;
-   print .call;
+   save_context;
+   param .call;
+   .call := call #print_int;
+   load_context;
 end
 end
 
 class Fac:
 
-procedure Fac::ComputeFac
+procedure Fac#ComputeFac
    # Block     : 0
    # adj       : [2, 1]
    # write     : [.new_array, .add, x]
-   # read      : [num, .new_array]
+   # read      : [num, .new_array, .add, x]
    # firstRead : [num]
    # live      : []
-   .new_array := new[] 3;
+   save_context;
+   param 3;
+   .new_array := call #new_array;
+   load_context;
    x := .new_array;
    .add := add 0, 1;
    x[.add] := 3;
@@ -55,10 +57,10 @@ procedure Fac::ComputeFac
  .if_false:
    .add_A := add num, 0;
    save_context;
-   param this;
    .sub := sub num, 1;
    param .sub;
-   .call := call Fac::ComputeFac;
+   param this;
+   .call := call Fac#ComputeFac;
    load_context;
    .mult := mult .add_A, .call;
    num_aux := .mult;
@@ -76,7 +78,7 @@ end
 
 class Fac2:
 
-procedure Fac2::method
+procedure Fac2#method
    # Block     : 0
    # adj       : []
    # write     : []
@@ -87,5 +89,3 @@ procedure Fac2::method
    return 4;
 end
 end
-
-Ok!
