@@ -23,7 +23,7 @@ public class TAProcedure {
   }
 
   public String getName() {
-    return label.toString().split("#")[1].trim();
+    return label.toString().split("@")[1].trim();
   }
 
   public List<TABasicBlock> getCode() {
@@ -40,8 +40,8 @@ public class TAProcedure {
       if (i == 0) str += "\n";
       else str += "\n\n";
 
-      str += pad + "# Block     : " + i + "\n";
-      str += pad + "# adj       : " + graph[i] + "\n";
+      str += pad + "; Block     : " + i + "\n";
+      str += pad + "; adj       : " + graph[i] + "\n";
       str += code.get(i);
     }
 

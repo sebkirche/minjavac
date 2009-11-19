@@ -114,7 +114,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(new ParameterSetup(lastTemp));
 
     module.addInstruction(new ProcedureCall(
-      lastTemp, new Label("#print_int")
+      lastTemp, new Label("_print_int")
     ));
     
     module.addInstruction(new Action(Opcode.LOAD_CTX));
@@ -292,7 +292,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     String methodN = callStmt.methodId.name;
     MethodDescriptor methodD = symbolTable.getMethod(methodN, classN);
 
-    Label procLabel = new Label(classN + "#" + methodN);
+    Label procLabel = new Label(classN + "@" + methodN);
     TAVariable temp = NamePool.newVar("call", methodD.getReturnType());
 
     module.addInstruction(new ProcedureCall(temp, procLabel));
@@ -326,7 +326,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(new Action(Opcode.SAVE_CTX));
     module.addInstruction(new ParameterSetup(size));
     module.addInstruction(new ProcedureCall(
-      temp, new Label("#new_array")
+      temp, new Label("_new_array")
     ));
     module.addInstruction(new Action(Opcode.LOAD_CTX));
 
@@ -338,7 +338,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     Type tempT = new IdentifierType(classN);
     TAVariable temp = NamePool.newVar("new_" + newObj.classNameId, tempT);
 
-    String procLabel = "#new_" + newObj.classNameId;
+    String procLabel = "_new_" + newObj.classNameId;
 
     module.addInstruction(new Action(Opcode.SAVE_CTX));
     module.addInstruction(new ProcedureCall(
@@ -423,27 +423,27 @@ public class TAModuleBuilderVisitor implements Visitor {
   }
 
   public void visit(VarDecl varD) {
-    throw new IllegalArgumentException("visit#VarDecl");
+    throw new IllegalArgumentException("visit@VarDecl");
   }
 
   public void visit(Formal param) {
-    throw new IllegalArgumentException("visit#Formal");
+    throw new IllegalArgumentException("visit@Formal");
   }
 
   public void visit(IntArrayType n) {
-    throw new IllegalArgumentException("visit#IntArrayType");
+    throw new IllegalArgumentException("visit@IntArrayType");
   }
 
   public void visit(BooleanType n) {
-    throw new IllegalArgumentException("visit#BooleanType");
+    throw new IllegalArgumentException("visit@BooleanType");
   }
 
   public void visit(IntegerType n) {
-    throw new IllegalArgumentException("visit#IntegerType");
+    throw new IllegalArgumentException("visit@IntegerType");
   }
 
   public void visit(IdentifierType n) {
-    throw new IllegalArgumentException("visit#IdentifierType");
+    throw new IllegalArgumentException("visit@IdentifierType");
   }
 
   private TAVariable getTAVariable(String name) {

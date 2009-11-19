@@ -58,8 +58,9 @@ public class minjavac {
     System.out.println("Making asm ...");
     nasm.generate();
 
-    FileWriter asmFile = new FileWriter(sourceName + ".nasm");
-    nasm.writeTo(asmFile);
+    String asmFileName = sourceName + ".nasm";
+    FileWriter asmFile = new FileWriter(asmFileName);
+    nasm.writeTo(asmFileName, asmFile);
     asmFile.close();
 
     System.out.println("\nDone!");

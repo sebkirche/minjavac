@@ -45,13 +45,13 @@ public class NasmInstruction {
       case OP:
         str = NasmUtils.stmtPad + text; break;
       case COMMENT:
-        str = "# " + text; break;
+        str = "; " + text; break;
       case OTHER:
         str = text; break;
     }
 
     if (!comment.isEmpty())
-      str += " # " + comment;
+      str += " ; " + comment;
 
     return str;
   }

@@ -27,7 +27,7 @@ public class MethodDescriptor {
   }
 
   public String getLabel() {
-    return classDescr.getName() + "#" + getName();
+    return classDescr.getName() + "@" + getName();
   }
 
   public Type getReturnType() {

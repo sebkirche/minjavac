@@ -72,7 +72,7 @@ public class TABasicBlock {
   public String toString() {
     String str = "";
     String pad = "   ";
-    String cpad = pad + "# ";
+    String cpad = pad + "; ";
 
     str += cpad + "write     : " + writeVars + "\n";
     str += cpad + "read      : " + readVars + "\n";

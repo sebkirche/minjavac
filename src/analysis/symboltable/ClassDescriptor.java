@@ -146,7 +146,7 @@ public class ClassDescriptor {
 
     for (String m1 : getMethods()) {
       boolean done = false;
-      String m1_label = getName() + "#" + m1;
+      String m1_label = getName() + "@" + m1;
 
       for (int i = 0; i < ml.size() && !done; ++i) {
         String m2 = ml.get(i);

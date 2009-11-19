@@ -13,7 +13,7 @@ public class VirtualTable {
   }
 
   public String getName() {
-    return className + "#vt";
+    return className + "@@vt";
   }
 
   public int getSize() {

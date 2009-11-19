@@ -227,15 +227,15 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   public void visit(ProcedureCall proc) {
     String label = proc.getProcedure().getLabel();
 
-    if (!label.startsWith("#")) {
+    if (!label.startsWith("_")) {
       String procLabel = proc.getProcedure().getLabel();
-      String classN = procLabel.split("#")[0].trim();
-      String methodN = procLabel.split("#")[1].trim();
+      String classN = procLabel.split("@")[0].trim();
+      String methodN = procLabel.split("@")[1].trim();
       VirtualTable vt = getVirtualTableForClass(classN);
 
       int methodPos = vt.getMethodPosition(methodN);
       
-      emit(Nasm.OP.make("call [edx + " + methodPos + "]"));
+      emit(Nasm.OP.make("call [edx+" + methodPos + "]"));
     }
     else {
       emit(Nasm.OP.make("call " + label));

@@ -18,14 +18,15 @@ public class NasmGenerator {
     NasmUtils.calculateOffsets();
     SymbolTable symT = SymbolTable.getInstance();
 
-    emit(Nasm.COMMENT.make("Virtual table definitions:"));
+    emit(Nasm.COMMENT.make("vt definitions"));
     emit(Nasm.DATA_SEGMENT.make());
     
     emitVirtualTableDefinitions();
 
-    emit(Nasm.COMMENT.make("Method definitions:"));
-    emit(Nasm.TEXT_SEGMENT.make());
     emit(Nasm.OTHER.make("\n"));
+    emit(Nasm.COMMENT.make("code"));
+    emit(Nasm.TEXT_SEGMENT.make());
+    emit(Nasm.OTHER.make(""));
 
     for (ClassDescriptor c : symT.getClassDescriptors()) {
       for (MethodDescriptor m : c.getMethodDescriptors()) {
@@ -33,6 +34,7 @@ public class NasmGenerator {
           emit(Nasm.LABEL.make("_main"));
 
         emitMethodCode(m);
+        emit(Nasm.OTHER.make("\n"));
       }
     }
   }
@@ -45,7 +47,9 @@ public class NasmGenerator {
       String array = vt.getMethodLabels().toString();
       array = array.substring(1, array.length()-1);
 
-      emit(Nasm.OTHER.make(label + ": dd " + array));
+      emit(Nasm.OTHER.make(
+        NasmUtils.labelPad + String.format("%-15s : dd %s", label, array)
+      ));
     }
   }
 
@@ -64,21 +68,17 @@ public class NasmGenerator {
     );
 
     for (TABasicBlock block : proc.getCode()) {
-      code.add(Nasm.OTHER.make("\n\n"));
+      code.add(Nasm.OTHER.make(""));
       blockEmitter.visit(block, method);
     }
-
-    // epilogue
-    emit(Nasm.OP.make("mov esp, ebp"));
-    emit(Nasm.OP.make("pop ebp"));
-    emit(Nasm.OP.make("ret"));
   }
 
   private void emit(NasmInstruction i) {
     code.add(i);
   }
 
-  public void writeTo(Writer out) throws IOException {
+  public void writeTo(String filename, Writer out) throws IOException {
+    out.write("; " + filename + "\n\n");
     for (NasmInstruction i : code)
       out.write(i + "\n");
   }
