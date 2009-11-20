@@ -126,7 +126,7 @@ public final class NasmUtils {
   private static String getSpecialVarHandle(
           TAVariable var, Set<String> forbiddenRegs) {
     if (var instanceof TAConstantVar) {
-      return var.toString();
+      return "dword " + var.toString();
     }
     else if (var instanceof TAFieldVar) {
       ClassDescriptor classD = methodD.getClassDescriptor();
@@ -179,25 +179,6 @@ public final class NasmUtils {
         pool.emit(Nasm.OP.make("mov edi, " + reg));
         indexHandle = "edi";
       }
-
-      /*
-      //String arrayHandle = getSourceVarHandle(cv.getArrayVar(), forbiddenRegs);
-      String arrayHandle = varHandle(cv.getArrayVar(), SOURCE, ON_REGISTER, forbiddenRegs);
-      Set<String> fr = new HashSet<String>(forbiddenRegs);
-      fr.add(arrayHandle);
-      String indexHandle = varHandle(cv.getIndexVar(), SOURCE, ON_REGISTER, fr);
-      //String indexHandle = getSourceVarHandle(cv.getIndexVar(), fr);
-
-      if (isMemoryHandle(arrayHandle)) {
-        pool.emit(Nasm.OP.make("mov esi, " + arrayHandle));
-        arrayHandle = "esi";
-      }
-
-      if (isMemoryHandle(indexHandle)) {
-        pool.emit(Nasm.OP.make("mov edi, " + indexHandle));
-        indexHandle = "edi";
-      }
-      */
 
       return String.format("dword [esi+4*%s+4]", indexHandle);
     }
