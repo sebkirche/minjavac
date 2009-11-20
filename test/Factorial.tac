@@ -27,13 +27,11 @@ class Fac:
 procedure Fac@ComputeFac
    ; Block     : 0
    ; adj       : [1]
-   ; write     : [.add, j, i]
-   ; read      : [.add, i]
+   ; write     : [i]
+   ; read      : []
    ; firstRead : []
-   ; live      : [j, i]
+   ; live      : [i]
    i := 0;
-   .add := add i, 1;
-   j := .add;
 
    ; Block     : 1
    ; adj       : [3, 2]
@@ -46,27 +44,16 @@ procedure Fac@ComputeFac
 
    ; Block     : 2
    ; adj       : [1]
-   ; write     : [.void, .mult_A, j, i, .add_A, .mult, .add_B, .add_C, .sub_A, .sub, .sub_B, .add_D, .add_E, .add_F]
-   ; read      : [.mult_A, j, i, .add_A, .mult, .add_B, .add_C, .sub_A, .sub, .sub_B, .add_D, .add_E, .add_F]
-   ; firstRead : [j, i]
-   ; live      : [j, i]
+   ; write     : [.void, .add, i]
+   ; read      : [.add, i]
+   ; firstRead : [i]
+   ; live      : [i]
    save_c_context;
    param i;
    .void := call _print_int;
    load_c_context;
-   .mult := mult 2, j;
-   .add_D := add i, .mult;
-   .add_C := add .add_D, 1;
-   .sub_A := sub .add_C, 4;
-   .add_B := add .sub_A, 4;
-   .sub := sub .add_B, 3;
-   .add_A := add .sub, j;
-   i := .add_A;
-   .add_F := add j, i;
-   .add_E := add .add_F, 5;
-   .mult_A := mult i, 7;
-   .sub_B := sub .add_E, .mult_A;
-   j := .sub_B;
+   .add := add i, 1;
+   i := .add;
    goto .loop;
 
    ; Block     : 3
