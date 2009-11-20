@@ -1,13 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int alloc(int size) {
-  return (int)malloc(size);
+void* alloc(int size) {
+  return malloc(size);
 }
 
-void new_array(int size) {
+int* new_array(int size) {
   int* array = (int*)alloc(4*(size+1));
   array[0] = size;
+  return array;
 }
 
 void print_int(int n) {
