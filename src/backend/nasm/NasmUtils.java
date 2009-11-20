@@ -138,11 +138,55 @@ public final class NasmUtils {
     }
     else if (var instanceof TAArrayCellVar) {
       TAArrayCellVar cv = (TAArrayCellVar)var;
+      TAVariable arrayV = cv.getArrayVar();
+      TAVariable indexV = cv.getIndexVar();
+      String arrayN = arrayV.toString();
+      String indexN = indexV.toString();
 
-      String arrayHandle = getSourceVarHandle(cv.getArrayVar(), forbiddenRegs);
+      if (!(cv.getArrayVar().isLocalVar()
+            || cv.getArrayVar().isConstant())
+         ||
+          !(cv.getIndexVar().isLocalVar()
+            || cv.getIndexVar().isConstant()))
+        throw new IllegalArgumentException("NasmUtils::specialVarHandle");
+
+      RegisterPool.VarGenDescriptor arrayD = pool.varDescriptor(
+        arrayV.toString()
+      );
+
+      String indexHandle = "";
+
+      if (arrayD.size() == 0) {
+        String memD = arrayD.getMemoryId(arrayN);
+        pool.emit(Nasm.OP.make("mov esi, [" + memD + "]"));
+      } else {
+        String reg = arrayD.iterator().next();
+        pool.emit(Nasm.OP.make("mov esi, " + reg));
+      }
+
+      RegisterPool.VarGenDescriptor indexD = pool.varDescriptor(
+        indexV.toString()
+      );
+
+      if (indexV.isConstant()) {
+        indexHandle = indexV.toString();
+      } else if (indexD.size() == 0) {
+        String memD = indexD.getMemoryId(indexN);
+        pool.emit(Nasm.OP.make("mov edi, [" + memD + "]"));
+        indexHandle = "edi";
+      } else {
+        String reg = indexD.iterator().next();
+        pool.emit(Nasm.OP.make("mov edi, " + reg));
+        indexHandle = "edi";
+      }
+
+      /*
+      //String arrayHandle = getSourceVarHandle(cv.getArrayVar(), forbiddenRegs);
+      String arrayHandle = varHandle(cv.getArrayVar(), SOURCE, ON_REGISTER, forbiddenRegs);
       Set<String> fr = new HashSet<String>(forbiddenRegs);
       fr.add(arrayHandle);
-      String indexHandle = getSourceVarHandle(cv.getIndexVar(), fr);
+      String indexHandle = varHandle(cv.getIndexVar(), SOURCE, ON_REGISTER, fr);
+      //String indexHandle = getSourceVarHandle(cv.getIndexVar(), fr);
 
       if (isMemoryHandle(arrayHandle)) {
         pool.emit(Nasm.OP.make("mov esi, " + arrayHandle));
@@ -153,8 +197,9 @@ public final class NasmUtils {
         pool.emit(Nasm.OP.make("mov edi, " + indexHandle));
         indexHandle = "edi";
       }
+      */
 
-      return String.format("dword [%s+4*%s+4]", arrayHandle, indexHandle);
+      return String.format("dword [esi+4*%s+4]", indexHandle);
     }
 
     return null;

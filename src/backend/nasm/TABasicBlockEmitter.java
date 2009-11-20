@@ -121,9 +121,9 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
         case IS_TRUE:
           jump_op = "jne"; break;
         case LESS_THAN:
-          jump_op = "jb"; break;
+          jump_op = "jl"; break;
         case GREATER_OR_EQUAL:
-          jump_op = "jae"; break;
+          jump_op = "jge"; break;
       }
 
       emit(Nasm.OP.make(jump_op + " " + cj.getTarget()));
@@ -167,8 +167,10 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     }
     else if (d.isLocalVar() && !s.isLocalVar()) {
       String destN = d.toString();
-      String destReg = varHandle(d, DESTINY, ON_REGISTER);
       String srcHandle = varHandle(s, SOURCE, ANY);
+
+      String destReg = varHandle(d, DESTINY, ON_REGISTER);
+      pool.prepareDestiny(destReg, d.toString());
 
       emit(Nasm.OP.make("mov " + destReg + ", " + srcHandle));
 
@@ -259,9 +261,9 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
       VirtualTable vt = getVirtualTableForClass(classN);
 
       int methodPos = vt.getMethodPosition(methodN);
-    
-      emit(Nasm.OP.make("mov esi, [edx+" + 4*methodPos + "]"));
-      emit(Nasm.OP.make("call dword [esi]"));
+
+      emit(Nasm.OP.make("mov esi, [edx]"));
+      emit(Nasm.OP.make("call [esi+" + 4*methodPos + "]"));
     }
     else {
       emit(Nasm.OP.make("call " + label));

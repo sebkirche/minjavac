@@ -2,7 +2,7 @@
 # %s -> <source_name>.nasm
 # %s -> <object_code_output>.o
 
-nasm_cmd = nasm -f win32 %s -o %s
+nasm_cmd = nasm -f win32 -O99 %s -o %s
 
 
 # Compiler and linker invocation line

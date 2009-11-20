@@ -31,8 +31,14 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
 
   public void visit(Copy copy) {
     visitRead(copy.getSource());
-    attachDeadVars();
-    visitWrite(copy.getDestiny());
+
+    if (copy.getDestiny() instanceof TAArrayCellVar) {
+      visitRead(copy.getDestiny());
+      attachDeadVars();
+    } else {
+      attachDeadVars();
+      visitWrite(copy.getDestiny());
+    }
   }
 
   public void visit(Jump jump) {
@@ -84,10 +90,10 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
   private void visitWrite(TAVariable v) {
     if (v instanceof TAThisReferenceVar) {
       visitWrite(((TAThisReferenceVar)v).getReference());
-    } else if (v instanceof TAArrayCellVar) {
+    } /*else if (v instanceof TAArrayCellVar) {
       visitRead(((TAArrayCellVar)v).getIndexVar());
       visitRead(((TAArrayCellVar)v).getArrayVar());
-    } else if (v instanceof TALocalVar) {
+    }*/ else if (v instanceof TALocalVar) {
       deadVars.add((TALocalVar)v);
     }
   }
