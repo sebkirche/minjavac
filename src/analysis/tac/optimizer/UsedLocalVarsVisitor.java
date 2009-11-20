@@ -33,8 +33,8 @@ class UsedLocalVarsVisitor implements TABasicBlockVisitor {
 
   public void visit(Operation op) {
     visitRead(op.getA());
-    visitWrite(op.getDestiny());
     if (op.getB() != null) visitRead(op.getB());
+    visitWrite(op.getDestiny());
   }
 
   public void visit(ParameterSetup param) {

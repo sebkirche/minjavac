@@ -55,7 +55,7 @@ public class NasmInstruction {
     }
 
     if (!comment.isEmpty()) {
-      str = String.format("%-25s ; %s", str, comment);
+      str = String.format("%-30s ; %s", str, comment);
     }
 
     return str;

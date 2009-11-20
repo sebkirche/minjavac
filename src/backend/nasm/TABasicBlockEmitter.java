@@ -57,16 +57,6 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   public void visit(Action action) {
     switch (action.getOpcode()) {
       case SAVE_CTX:
-        /*if (savedEbx = pool.regNeedSaving("ebx"))
-          emit(Nasm.OP.make("push ebx"));
-        else
-          pool.spillRegister("ebx");
-
-        if (savedEcx = pool.regNeedSaving("ecx"))
-          emit(Nasm.OP.make("push ecx"));
-        else
-          pool.spillRegister("ecx");*/
-
         emit(Nasm.OP.make("push edx"));
         numParams = 0;
         break;
@@ -76,13 +66,6 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
           emit(Nasm.OP.make("add esp, " + 4 * numParams));
         
         emit(Nasm.OP.make("pop edx"));
-
-        /*if (savedEcx)
-          emit(Nasm.OP.make("pop ecx"));
-
-        if (savedEbx)
-          emit(Nasm.OP.make("pop ebx"));*/
-
         break;
     }
   }
@@ -98,20 +81,7 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     
     ++numParams;
 
-    /*RegisterPool.VarGenDescriptor varD = pool.varDescriptor(param.getParameter().toString());
-    if (varD != null) {
-      debug("1param = " + param);
-      debug("paramDescr = " + varD);
-      debug("paramOnMem = " + varD.onMemory());
-    }*/
-
     String handle = varHandle(param.getParameter(), SOURCE);
-
-    /*if (varD != null) {
-      debug("2param = " + param);
-      debug("paramDescr = " + varD);
-      debug("paramOnMem = " + varD.onMemory());
-    }*/
 
     if (isMemoryHandle(handle))
       handle = "dword " + handle;
@@ -217,6 +187,11 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     a = op.getA();
     b = op.getB();
 
+    if (!dest.isLocalVar() ||
+        !(a.isLocalVar() || a.isConstant()) ||
+        (b != null && !(b.isLocalVar() || b.isConstant())))
+      throw new IllegalArgumentException("visit::Operation");
+
     Set<String> fr = emptySet();
     handleA = varHandle(a, SOURCE, ON_REGISTER, fr);
     fr.add(handleA);
@@ -227,6 +202,7 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     }
 
     handleDest = varHandle(dest, DESTINY, ON_REGISTER, fr);
+    pool.prepareDestiny(handleDest, dest.toString());
 
     switch (op.getOperation()) {
       case ADD:
@@ -270,6 +246,7 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     pool.spillRegister("eax");
     pool.spillRegister("ebx");
     pool.spillRegister("ecx");
+    pool.prepareDestiny("eax", proc.getDestiny().toString());
 
     String label = proc.getProcedure().getLabel();
 
@@ -286,8 +263,6 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
     else {
       emit(Nasm.OP.make("call " + label));
     }
-
-    pool.prepareDestiny("eax", proc.getDestiny().toString());
   }
 
   private VirtualTable getVirtualTableForClass(String classN) {

@@ -24,14 +24,15 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
 
     for (int i = code.size()-1; i >= 0; --i) {
       instruction = code.get(i);
-      attachDeadVars(instruction);
+      //attachDeadVars(instruction);
       instruction.accept(this);
     }
   }
 
   public void visit(Copy copy) {
-    visitWrite(copy.getDestiny());
     visitRead(copy.getSource());
+    attachDeadVars();
+    visitWrite(copy.getDestiny());
   }
 
   public void visit(Jump jump) {
@@ -39,25 +40,30 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
       ConditionalJump j = (ConditionalJump)jump;
       visitRead(j.getA());
       if (j.getB() != null) visitRead(j.getB());
+      attachDeadVars();
     }
   }
 
   public void visit(Operation op) {
-    visitWrite(op.getDestiny());
     visitRead(op.getA());
     if (op.getB() != null) visitRead(op.getB());
+    attachDeadVars();
+    visitWrite(op.getDestiny());
   }
 
   public void visit(ParameterSetup param) {
     visitRead(param.getParameter());
+    attachDeadVars();
   }
 
   public void visit(ProcedureCall proc) {
+    attachDeadVars();
     visitWrite(proc.getDestiny());
   }
 
   public void visit(Return ret) {
     visitRead(ret.getReturnVariable());
+    attachDeadVars();
   }
 
   public void visit(Action action) { }
@@ -86,8 +92,8 @@ public class DeadVarsVisitor implements TABasicBlockVisitor {
     }
   }
 
-  private void attachDeadVars(TAInstruction i) {
+  private void attachDeadVars() {
     for (TALocalVar v : deadVars)
-      i.addDeadVar(v);
+      instruction.addDeadVar(v);
   }
 }
