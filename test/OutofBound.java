@@ -47,7 +47,7 @@ class LS {
 
     j = 0;
     k = size + 1;
-    while (j < (size) && !(j < 0)) {
+    while (j < (size) && !(j > 0)) {
       aux01 = 2 * j;
       aux02 = k - 3;
       number[j] = aux01 + aux02;
