@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Properties;
 import parser.*;
 import analysis.tac.*;
 import analysis.syntaxtree.*;
@@ -8,7 +9,11 @@ import backend.nasm.NasmGenerator;
 
 public class minjavac {
   public static void main(String[] args) throws Exception {
-    String sourceName;
+    int ret;
+    String sourceName, cmd;
+
+    Properties config = new Properties();
+    config.load(minjavac.class.getResourceAsStream("config.txt"));
 
     if (args.length == 1) {
       new Parser(new java.io.FileInputStream(args[0]));
@@ -62,6 +67,32 @@ public class minjavac {
     FileWriter asmFile = new FileWriter(asmFileName);
     nasm.writeTo(asmFileName, asmFile);
     asmFile.close();
+
+    System.out.print("Assembling ... ");
+
+    String objFileName = sourceName + ".o";
+    cmd = config.getProperty("nasm_cmd");
+    cmd = String.format(cmd, asmFileName, objFileName);
+    System.out.println(cmd);
+
+    ret = Runtime.getRuntime().exec(cmd).waitFor();
+    if (ret != 0) {
+      System.out.println("Assembly error");
+      return;
+    }
+
+    System.out.print("Linking ...");
+    cmd = config.getProperty("compiler_cmd");
+    String runtime_lib = config.getProperty("runtime_lib_path");
+    String exeFileName = sourceName + ".exe";
+    cmd = String.format(cmd, objFileName, runtime_lib, exeFileName);
+    System.out.println(cmd);
+    
+    ret = Runtime.getRuntime().exec(cmd).waitFor();
+    if (ret != 0) {
+      System.out.println("Linker error");
+      return;
+    }
 
     System.out.println("\nDone!");
   }

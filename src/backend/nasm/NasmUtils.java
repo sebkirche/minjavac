@@ -154,7 +154,7 @@ public final class NasmUtils {
         indexHandle = "edi";
       }
 
-      return String.format("[%s+4*%s+1]", arrayHandle, indexHandle);
+      return String.format("dword [%s+4*%s+4]", arrayHandle, indexHandle);
     }
 
     return null;

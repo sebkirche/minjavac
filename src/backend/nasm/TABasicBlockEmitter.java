@@ -160,7 +160,7 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
       pool.varDescriptor(destN).setOnly(srcReg);
       pool.regDescriptor(srcReg).add(destN);
     }
-    else if (!d.isLocalVar() && s.isLocalVar()) {
+    else if (!d.isLocalVar() && (s.isLocalVar() || s.isConstant())) {
       String srcReg = varHandle(s, SOURCE, ON_REGISTER);
       String destHandle = varHandle(d, DESTINY, ANY);
       emit(Nasm.OP.make("mov " + destHandle + ", " + srcReg));
