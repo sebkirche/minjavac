@@ -24,7 +24,6 @@ public class NasmGenerator {
 
     emit(Nasm.OTHER.make("; vt definitions"));
     emit(Nasm.DATA_SEGMENT.make());
-    
     emitVirtualTableDefinitions();
     emit(Nasm.OTHER.make("\n"));
 
@@ -80,7 +79,7 @@ public class NasmGenerator {
       emit(Nasm.OP.make("push dword " + c.getSize()));
       emit(Nasm.OP.make("call _alloc"));
       emit(Nasm.OP.make("add esp, 4"));
-      emit(Nasm.OP.make("mov [eax+0], " + c.getName() + "@@vt"));
+      emit(Nasm.OP.make("mov [eax+0], dword " + c.getName() + "@@vt"));
       emit(Nasm.OP.make("popa"));
       emit(Nasm.OP.make("ret"));
     }
