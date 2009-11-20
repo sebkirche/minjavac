@@ -7,19 +7,16 @@ class Factorial {
 
 class Fac {
   public int ComputeFac(int num) {
-    /*int num_aux;
-    int[] x;
-    x = new int[3];
-    x[0 + 1] = 3;
-    if (num < 1) {
-      num_aux = 1;
-    } else {
-      num_aux = (num+0) * (this.ComputeFac(num - 1));
+    int i;
+    i = 0;
+    
+    while (i < num) {
+      System.out.println(i);
+      i = i + 1;
     }
-    return num_aux;
-  }*/
-  return num;
-}
+
+    return num;
+  }
 /*
 class Fac2 extends Fac {
   public int method() {
