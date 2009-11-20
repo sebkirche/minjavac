@@ -57,27 +57,17 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   public void visit(Action action) {
     switch (action.getOpcode()) {
       case SAVE_CTX:
+      case SAVE_C_CTX:
         emit(Nasm.OP.make("push edx"));
         numParams = 0;
         break;
 
-      case SAVE_C_CTX:
-        emit(Nasm.OP.make("pusha"));
-        numParams = 0;
-        break;
-
       case LOAD_CTX:
-        if (numParams != 0)
-          emit(Nasm.OP.make("add esp, " + 4 * numParams));
-        
-        emit(Nasm.OP.make("pop edx"));
-        break;
-
       case LOAD_C_CTX:
         if (numParams != 0)
           emit(Nasm.OP.make("add esp, " + 4 * numParams));
         
-        emit(Nasm.OP.make("popa"));
+        emit(Nasm.OP.make("pop edx"));
         break;
     }
   }
@@ -262,15 +252,16 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
 
     String label = proc.getProcedure().getLabel();
 
-    if (!label.startsWith("_")) {
+    if (!label.startsWith("_") && !label.contains("@@")) {
       String procLabel = proc.getProcedure().getLabel();
       String classN = procLabel.split("@")[0].trim();
       String methodN = procLabel.split("@")[1].trim();
       VirtualTable vt = getVirtualTableForClass(classN);
 
       int methodPos = vt.getMethodPosition(methodN);
-      
-      emit(Nasm.OP.make("call [edx+" + 4*methodPos + "]"));
+    
+      emit(Nasm.OP.make("mov esi, [edx+" + 4*methodPos + "]"));
+      emit(Nasm.OP.make("call dword [esi]"));
     }
     else {
       emit(Nasm.OP.make("call " + label));

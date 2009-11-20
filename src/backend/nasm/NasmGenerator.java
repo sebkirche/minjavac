@@ -34,12 +34,13 @@ public class NasmGenerator {
     
     emit(Nasm.OTHER.make("; code"));
     emit(Nasm.TEXT_SEGMENT.make());
+    emit(Nasm.OTHER.make(" global _asmMain"));
     emit(Nasm.OTHER.make(""));
 
     for (ClassDescriptor c : symT.getClassDescriptors()) {
       for (MethodDescriptor m : c.getMethodDescriptors()) {
         if (c == symT.getMainClass())
-          emit(Nasm.LABEL.make("_main"));
+          emit(Nasm.LABEL.make("_asmMain"));
 
         emitMethodCode(m);
 
@@ -75,12 +76,10 @@ public class NasmGenerator {
     for (ClassDescriptor c : symT.getClassDescriptors()) {
       emit(Nasm.OTHER.make(""));
       emit(Nasm.LABEL.make(c.getName() + "@@new"));
-      emit(Nasm.OP.make("pusha"));
       emit(Nasm.OP.make("push dword " + c.getSize()));
       emit(Nasm.OP.make("call _alloc"));
       emit(Nasm.OP.make("add esp, 4"));
       emit(Nasm.OP.make("mov [eax+0], dword " + c.getName() + "@@vt"));
-      emit(Nasm.OP.make("popa"));
       emit(Nasm.OP.make("ret"));
     }
   }
