@@ -61,11 +61,23 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
         numParams = 0;
         break;
 
+      case SAVE_C_CTX:
+        emit(Nasm.OP.make("pusha"));
+        numParams = 0;
+        break;
+
       case LOAD_CTX:
         if (numParams != 0)
           emit(Nasm.OP.make("add esp, " + 4 * numParams));
         
         emit(Nasm.OP.make("pop edx"));
+        break;
+
+      case LOAD_C_CTX:
+        if (numParams != 0)
+          emit(Nasm.OP.make("add esp, " + 4 * numParams));
+        
+        emit(Nasm.OP.make("popa"));
         break;
     }
   }

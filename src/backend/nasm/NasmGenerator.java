@@ -18,12 +18,21 @@ public class NasmGenerator {
     NasmUtils.calculateOffsets();
     SymbolTable symT = SymbolTable.getInstance();
 
+    emit(Nasm.OTHER.make("; c runtime"));
+    emit(Nasm.OTHER.make("extern _alloc, _new_array, _print_int"));
+    emit(Nasm.OTHER.make("\n"));
+
     emit(Nasm.OTHER.make("; vt definitions"));
     emit(Nasm.DATA_SEGMENT.make());
     
     emitVirtualTableDefinitions();
-
     emit(Nasm.OTHER.make("\n"));
+
+    emit(Nasm.OTHER.make("; constructors"));
+    emit(Nasm.TEXT_SEGMENT.make());
+    emitClassConstructors();
+    emit(Nasm.OTHER.make("\n"));
+    
     emit(Nasm.OTHER.make("; code"));
     emit(Nasm.TEXT_SEGMENT.make());
     emit(Nasm.OTHER.make(""));
@@ -58,6 +67,22 @@ public class NasmGenerator {
       emit(Nasm.OTHER.make(
         NasmUtils.labelPad + String.format("%-15s : dd %s", label, array)
       ));
+    }
+  }
+
+  private void emitClassConstructors() {
+    SymbolTable symT = SymbolTable.getInstance();
+
+    for (ClassDescriptor c : symT.getClassDescriptors()) {
+      emit(Nasm.OTHER.make(""));
+      emit(Nasm.LABEL.make(c.getName() + "@@new"));
+      emit(Nasm.OP.make("pusha"));
+      emit(Nasm.OP.make("push dword " + c.getSize()));
+      emit(Nasm.OP.make("call _alloc"));
+      emit(Nasm.OP.make("add esp, 4"));
+      emit(Nasm.OP.make("mov [eax+0], " + c.getName() + "@@vt"));
+      emit(Nasm.OP.make("popa"));
+      emit(Nasm.OP.make("ret"));
     }
   }
 

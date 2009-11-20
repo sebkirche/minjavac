@@ -146,7 +146,7 @@ public class RegisterPool {
       VarGenDescriptor varD = varDescriptor(var);
 
       if (varD.size() == 1 && !varD.onMemory()) {
-        debug("spill " + varD) ;
+        debug("spill " + var + ": " + varD) ;
 
         String mov = String.format(
           "mov [%s], %s", varD.getMemoryId(var), reg

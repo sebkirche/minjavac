@@ -110,14 +110,14 @@ public class TAModuleBuilderVisitor implements Visitor {
   public void visit(Print printStmt) {
     printStmt.intExpr.accept(this);
 
-    module.addInstruction(new Action(Opcode.SAVE_CTX));
+    module.addInstruction(new Action(Opcode.SAVE_C_CTX));
     module.addInstruction(new ParameterSetup(lastTemp));
 
     module.addInstruction(new ProcedureCall(
       NamePool.newVar("void", IntegerType.instance()), new Label("_print_int")
     ));
     
-    module.addInstruction(new Action(Opcode.LOAD_CTX));
+    module.addInstruction(new Action(Opcode.LOAD_C_CTX));
   }
 
   public void visit(Assign assignStmt) {
@@ -323,12 +323,12 @@ public class TAModuleBuilderVisitor implements Visitor {
     newArray.sizeExpr.accept(this);
     TAVariable size = lastTemp;
 
-    module.addInstruction(new Action(Opcode.SAVE_CTX));
+    module.addInstruction(new Action(Opcode.SAVE_C_CTX));
     module.addInstruction(new ParameterSetup(size));
     module.addInstruction(new ProcedureCall(
       temp, new Label("_new_array")
     ));
-    module.addInstruction(new Action(Opcode.LOAD_CTX));
+    module.addInstruction(new Action(Opcode.LOAD_C_CTX));
 
     lastTemp = temp;
   }
@@ -338,7 +338,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     Type tempT = new IdentifierType(classN);
     TAVariable temp = NamePool.newVar("new_" + newObj.classNameId, tempT);
 
-    String procLabel = "_new_" + newObj.classNameId;
+    String procLabel = newObj.classNameId + "@@new";
 
     module.addInstruction(new Action(Opcode.SAVE_CTX));
     module.addInstruction(new ProcedureCall(

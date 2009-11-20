@@ -8,7 +8,9 @@ public enum Opcode {
   NOT("not"),
   ARRAY_LENGTH("length"),
   SAVE_CTX("save_context"),
-  LOAD_CTX("load_context");
+  LOAD_CTX("load_context"),
+  SAVE_C_CTX("save_c_context"),
+  LOAD_C_CTX("load_c_context");
 
   private String op;
 
