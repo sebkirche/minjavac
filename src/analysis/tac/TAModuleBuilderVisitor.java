@@ -114,7 +114,7 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(new ParameterSetup(lastTemp));
 
     module.addInstruction(new ProcedureCall(
-      lastTemp, new Label("_print_int")
+      NamePool.newVar("void", IntegerType.instance()), new Label("_print_int")
     ));
     
     module.addInstruction(new Action(Opcode.LOAD_CTX));

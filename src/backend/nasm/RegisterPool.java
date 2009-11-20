@@ -96,7 +96,7 @@ public class RegisterPool {
 
     for (VariableDescriptor local : methodD.getLocalVars()) {
       descriptors.put(local.name(), local);
-      variables.put(local.name(), new VarGenDescriptor(false));
+      variables.put(local.name(), new VarGenDescriptor(true));
     }
   }
 
@@ -157,6 +157,7 @@ public class RegisterPool {
       varD.remove(reg);
     }
 
+    debug("removing " + var + " from " + reg);
     regDescriptor(reg).remove(var);
   }
 
@@ -218,7 +219,8 @@ public class RegisterPool {
       String var = v.getName();
       VarGenDescriptor varD = varDescriptor(var);
       
-      if (!varNeedSaving(var)) continue;
+      if (!varNeedSaving(var))
+        continue;
 
       String reg = varD.iterator().next();
 
