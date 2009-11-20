@@ -8,11 +8,19 @@ class Factorial {
 class Fac {
   public int ComputeFac(int num) {
     int i;
+    int j;
+    int k;
+    int q;
+
     i = 0;
+    j = i+1;
+    q = 1;
+    k = 2;
     
-    while (i < num) {
-      System.out.println(i);
-      i = i + 1;
+    while (0 < k) {
+      i = j * q - k + 5;
+      q = q + k + 5 + 4 - j*i*k*q;
+      k = (q+j+i-k)*3;
     }
 
     return num;
