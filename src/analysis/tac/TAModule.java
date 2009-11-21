@@ -1,12 +1,9 @@
 package analysis.tac;
 
-import analysis.tac.optimizer.TAOptimizer;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
+import analysis.symboltable.*;
 import analysis.syntaxtree.Type;
-import analysis.symboltable.SymbolTable;
-import analysis.symboltable.MethodDescriptor;
+import analysis.tac.optimizer.TAOptimizer;
 import analysis.tac.instructions.TAInstruction;
 
 public class TAModule {
@@ -14,9 +11,11 @@ public class TAModule {
   private List<TAClass> classes;
   private TAProcedure openProcedure;
   private List<TAInstruction> instructions;
+  private Map<String,String> stringPool;
 
   public TAModule() {
     classes = new ArrayList<TAClass>(5);
+    stringPool = new HashMap<String,String>(20);
     openClass = null;
     openProcedure = null;
   }
@@ -29,6 +28,14 @@ public class TAModule {
     return openProcedure;
   }
 
+  public Set<Map.Entry<String,String>> getStringPool() {
+    return stringPool.entrySet();
+  }
+
+  public boolean hasConstants() {
+    return !stringPool.isEmpty();
+  }
+
   public void startClass(String name) {
     openClass = new TAClass(name); 
   }
@@ -37,6 +44,17 @@ public class TAModule {
     String procLabel = openClass.getName() + "@" + procName;
     openProcedure = new TAProcedure(procLabel);
     instructions = new LinkedList<TAInstruction>();
+  }
+
+  public String addStringLiteral(String str) {
+    String handle = stringPool.get(str);
+
+    if (handle == null) {
+      handle = "str_" + stringPool.size();
+      stringPool.put(str, handle);
+    }
+
+    return handle;
   }
 
   public void addTemporaryVar(String name, Type type) {

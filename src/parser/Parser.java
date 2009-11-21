@@ -10,7 +10,7 @@ public class Parser implements ParserConstants {
   ClassDeclList cl;
     m = MainClass();
     cl = ClassDeclarationList();
-    jj_consume_token(0); 
+    jj_consume_token(0);
    {if (true) return new Program(m, cl);}
     throw new Error("Missing return statement in function");
   }
@@ -167,7 +167,8 @@ public class Parser implements ParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INT:
     case BOOLEAN:
-    case PRINT:
+    case PRINT_INT:
+    case PRINT_STRING:
     case IF:
     case WHILE:
     case LBRACE:
@@ -296,7 +297,8 @@ public class Parser implements ParserConstants {
       }
       VarDeclarationTail(t, vl, stl);
       break;
-    case PRINT:
+    case PRINT_INT:
+    case PRINT_STRING:
     case IF:
     case WHILE:
     case LBRACE:
@@ -310,8 +312,11 @@ public class Parser implements ParserConstants {
       case WHILE:
         stmt = WhileStatement();
         break;
-      case PRINT:
-        stmt = PrintStatement();
+      case PRINT_INT:
+        stmt = PrintIntStatement();
+        break;
+      case PRINT_STRING:
+        stmt = PrintStringStatement();
         break;
       default:
         jj_la1[10] = jj_gen;
@@ -369,7 +374,8 @@ public class Parser implements ParserConstants {
     label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case PRINT:
+      case PRINT_INT:
+      case PRINT_STRING:
       case IF:
       case WHILE:
       case LBRACE:
@@ -389,7 +395,8 @@ public class Parser implements ParserConstants {
   Identifier id;
   Statement stmt;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case PRINT:
+    case PRINT_INT:
+    case PRINT_STRING:
     case IF:
     case WHILE:
     case LBRACE:
@@ -403,8 +410,11 @@ public class Parser implements ParserConstants {
       case WHILE:
         stmt = WhileStatement();
         break;
-      case PRINT:
-        stmt = PrintStatement();
+      case PRINT_INT:
+        stmt = PrintIntStatement();
+        break;
+      case PRINT_STRING:
+        stmt = PrintStringStatement();
         break;
       default:
         jj_la1[14] = jj_gen;
@@ -461,14 +471,25 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public Statement PrintStatement() throws ParseException {
+  static final public Statement PrintIntStatement() throws ParseException {
   Exp e;
-    jj_consume_token(PRINT);
+    jj_consume_token(PRINT_INT);
     jj_consume_token(LPARENS);
     e = Expression();
     jj_consume_token(RPARENS);
     jj_consume_token(SEMI);
     {if (true) return new Print(e);}
+    throw new Error("Missing return statement in function");
+  }
+
+  static final public Statement PrintStringStatement() throws ParseException {
+  String s;
+    jj_consume_token(PRINT_STRING);
+    jj_consume_token(LPARENS);
+    s = StringLiteral();
+    jj_consume_token(RPARENS);
+    jj_consume_token(SEMI);
+    {if (true) return new PrintString(s);}
     throw new Error("Missing return statement in function");
   }
 
@@ -807,6 +828,21 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
+  static final public String StringLiteral() throws ParseException {
+  Token t;
+    t = jj_consume_token(STRING_LITERAL);
+    {if (true) return t.image.substring(1, t.image.length()-1)
+                  .replace("\u005c\u005cn", "\u005cn")
+                  .replace("\u005c\u005ct", "\u005ct")
+                  .replace("\u005c\u005cb", "\u005cb")
+                  .replace("\u005c\u005cr", "\u005cr")
+                  .replace("\u005c\u005cf", "\u005cf")
+                  .replace("\u005c\u005c\u005c\u005c", "\u005c\u005c")
+                  .replace("\u005c\u005c'", "\u005c'")
+                  .replace("\u005c\u005c\u005c"", "\u005c"");}
+    throw new Error("Missing return statement in function");
+  }
+
   static private boolean jj_initialized_once = false;
   /** Generated Token Manager. */
   static public ParserTokenManager token_source;
@@ -825,10 +861,10 @@ public class Parser implements ParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x800000,0x10000000,0x1200,0x2000000,0x1181200,0x0,0x1200,0x1200,0x0,0x1200,0x1180000,0x1181200,0x0,0x1180000,0x1180000,0x1180000,0x0,0x0,0x0,0xc0000000,0xc0000000,0x0,0x0,0x0,0x0,0x21c000,0x40000,0x21c000,0x200,0x0,};
+      jj_la1_0 = new int[] {0x1000000,0x20000000,0x1200,0x4000000,0x2381200,0x0,0x1200,0x1200,0x0,0x1200,0x2380000,0x2381200,0x0,0x2380000,0x2380000,0x2380000,0x0,0x0,0x0,0x80000000,0x80000000,0x0,0x0,0x0,0x0,0x41c000,0x40000,0x41c000,0x200,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x200,0x8000,0x0,0x8200,0x800,0x8000,0x8000,0x80,0x0,0x200,0x8200,0x8090,0x8200,0x200,0x8200,0x90,0x2,0x8,0x0,0x0,0x1,0x4,0x1080,0x1080,0xc024,0x8000,0xc020,0x8000,0x800,};
+      jj_la1_1 = new int[] {0x0,0x400,0x10000,0x0,0x10400,0x1000,0x10000,0x10000,0x100,0x0,0x400,0x10400,0x10120,0x10400,0x400,0x10400,0x120,0x4,0x10,0x1,0x1,0x2,0x8,0x2100,0x2100,0x18048,0x10000,0x18040,0x10000,0x1000,};
    }
 
   /** Constructor with InputStream. */
@@ -966,7 +1002,7 @@ public class Parser implements ParserConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[49];
+    boolean[] la1tokens = new boolean[51];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -983,7 +1019,7 @@ public class Parser implements ParserConstants {
         }
       }
     }
-    for (int i = 0; i < 49; i++) {
+    for (int i = 0; i < 51; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

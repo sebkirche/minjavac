@@ -56,9 +56,9 @@ public class minjavac {
     System.out.println("Making IR ...");
     program.accept(tacBuilder);
 
-    FileWriter irFile = new FileWriter(sourceName + ".tac");
+    /*FileWriter irFile = new FileWriter(sourceName + ".tac");
     irFile.write(TAModule.getInstance().toString());
-    irFile.close();
+    irFile.close();*/
 
     System.out.println("Making asm ...");
     nasm.generate();

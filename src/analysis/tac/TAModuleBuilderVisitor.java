@@ -120,6 +120,20 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(new Action(Opcode.LOAD_C_CTX));
   }
 
+  public void visit(PrintString printStr) {
+    String handle = module.addStringLiteral(printStr.str);
+    TALabelPointerVar var = new TALabelPointerVar(handle);
+
+    module.addInstruction(new Action(Opcode.SAVE_C_CTX));
+    module.addInstruction(new ParameterSetup(var));
+
+    module.addInstruction(new ProcedureCall(
+      NamePool.newVar("void", IntegerType.instance()), new Label("_print_str")
+    ));
+
+    module.addInstruction(new Action(Opcode.LOAD_C_CTX));
+  }
+
   public void visit(Assign assignStmt) {
     assignStmt.valueExpr.accept(this);
 

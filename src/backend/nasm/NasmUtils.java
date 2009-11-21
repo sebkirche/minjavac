@@ -212,6 +212,11 @@ public final class NasmUtils {
     methodD = md;
   }
 
+  public static String byteToHex(byte b){
+    int i = b & 0xFF;
+    return "0x" + Integer.toHexString(i);
+  }
+
   private static RegisterPool pool;
   private static MethodDescriptor methodD;
 

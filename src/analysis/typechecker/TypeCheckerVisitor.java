@@ -173,6 +173,10 @@ public class TypeCheckerVisitor implements TypeVisitor {
     return null;
   }
 
+  public Type visit(PrintString printStmt) {
+    return null;
+  }
+
   public Type visit(Assign assignStmt) {
     Type varT = getVarType(assignStmt.varId);
     Type expT = assignStmt.valueExpr.accept(this);

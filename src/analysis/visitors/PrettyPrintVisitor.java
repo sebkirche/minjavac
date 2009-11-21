@@ -188,6 +188,10 @@ public class PrettyPrintVisitor implements Visitor {
     System.out.print(");");
   }
 
+  public void visit(PrintString p) {
+    System.out.print("System.out.print(" + p.str + ");");
+  }
+
   // Identifier i;
   // Exp e;
   public void visit(Assign n) {

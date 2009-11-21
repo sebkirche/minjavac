@@ -18,6 +18,7 @@ public interface TypeVisitor {
   public Type visit(If n);
   public Type visit(While n);
   public Type visit(Print n);
+  public Type visit(PrintString n);
   public Type visit(Assign n);
   public Type visit(ArrayAssign n);
   public Type visit(And n);

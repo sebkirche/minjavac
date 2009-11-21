@@ -24,10 +24,10 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
   }
 
   private void emit(NasmInstruction i) {
-    TAInstruction current = pool.getCurrentInstruction();
+    /*TAInstruction current = pool.getCurrentInstruction();
 
     if (current != null)
-      i.setComment(current.toString());
+      i.setComment(current.toString());*/
 
     code.add(i);
   }
@@ -78,6 +78,11 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
       String handle = varHandle(trv.getReference(), SOURCE);
 
       emit(Nasm.OP.make("mov edx, " + handle));
+      return;
+    }
+    else if (param.getParameter() instanceof TALabelPointerVar) {
+      TALabelPointerVar var = (TALabelPointerVar)param.getParameter();
+      emit(Nasm.OP.make("push dword " + var.getLabel()));
       return;
     }
     

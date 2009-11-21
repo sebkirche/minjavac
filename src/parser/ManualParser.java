@@ -202,7 +202,7 @@ public class ManualParser implements ParserConstants {
       WhileStatement();
       Statements();
     }
-    else if (lookahead(PRINT)) {
+    else if (lookahead(PRINT_INT)) {
       PrintStatement();
       Statements();
     }
@@ -234,7 +234,7 @@ public class ManualParser implements ParserConstants {
     while (lookahead(LBRACE)
         || lookahead(IF)
         || lookahead(WHILE)
-        || lookahead(PRINT)
+        || lookahead(PRINT_INT)
         || lookahead(ID)) {
       Statement();
     }
@@ -250,7 +250,7 @@ public class ManualParser implements ParserConstants {
     else if (lookahead(WHILE)) {
       WhileStatement();
     }
-    else if (lookahead(PRINT)) {
+    else if (lookahead(PRINT_INT)) {
       PrintStatement();
     }
     else {
@@ -287,7 +287,7 @@ public class ManualParser implements ParserConstants {
   }
 
   private void PrintStatement() throws ParseException {
-    match(PRINT);
+    match(PRINT_INT);
     match(LPARENS);
     Expression();
     match(RPARENS);

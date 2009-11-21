@@ -170,6 +170,8 @@ public class SymbolTableBuilderVisitor implements Visitor {
     printStmt.intExpr.accept(this);
   }
 
+  public void visit(PrintString printStr) { }
+
   public void visit(Assign assignStmt) {
     checkVar(assignStmt.varId.toString());
     assignStmt.valueExpr.accept(this);

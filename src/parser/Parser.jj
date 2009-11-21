@@ -44,7 +44,8 @@ TOKEN : /* Keywords */
 
  | < MAIN      : "main" >
  | < LENGTH    : "length" >
- | < PRINT     : "System.out.println" >
+ | < PRINT_INT    : "System.out.println" >
+ | < PRINT_STRING : "System.out.print" >
 
  | < IF        : "if" >
  | < NEW       : "new" >
@@ -99,6 +100,19 @@ TOKEN : /* Identifiers */
     < ID : <LETTER> (<LETTER> | ["0"-"9"])* >
 
   | < #LETTER : "$" | "_" | ["a"-"z","A"-"Z"] >
+}
+
+
+TOKEN : /* Strings */
+{
+  < STRING_LITERAL :
+      "\""
+      (
+          ~["\"","\\","\n","\r"]
+        | "\\" ["n","t","b","r","f","\\","'","\""]
+      )*
+      "\""
+  >
 }
 
 
@@ -312,7 +326,8 @@ void VarDeclarationOrStatement(VarDeclList vl, StatementList stl) :
      stmt = Block() |
      stmt = IfStatement() |
      stmt = WhileStatement() |
-     stmt = PrintStatement()
+     stmt = PrintIntStatement() |
+     stmt = PrintStringStatement()
    )
    { stl.addElement(stmt); }
    Statements(stl)
@@ -372,7 +387,8 @@ Statement Statement() :
      stmt = Block() |
      stmt = IfStatement() |
      stmt = WhileStatement() |
-     stmt = PrintStatement()
+     stmt = PrintIntStatement() |
+     stmt = PrintStringStatement()
    )
    { return stmt; }
  |
@@ -416,13 +432,23 @@ Statement WhileStatement() :
 }
 
 
-Statement PrintStatement() :
+Statement PrintIntStatement() :
 {
   Exp e;
 }
 {
-  <PRINT> <LPARENS> e = Expression() <RPARENS> <SEMI>
+  <PRINT_INT> <LPARENS> e = Expression() <RPARENS> <SEMI>
   { return new Print(e); }
+}
+
+
+Statement PrintStringStatement() :
+{
+  String s;
+}
+{
+  <PRINT_STRING> <LPARENS> s = StringLiteral() <RPARENS> <SEMI>
+  { return new PrintString(s); }
 }
 
 
@@ -636,5 +662,24 @@ Exp IntegerLiteral() :
   {
     num = Integer.valueOf(t.image);
     return new IntegerLiteral(num);
+  }
+}
+
+String StringLiteral() :
+{
+  Token t;
+}
+{
+  t = <STRING_LITERAL>
+  {
+    return t.image.substring(1, t.image.length()-1)
+                  .replace("\\n", "\n")
+                  .replace("\\t", "\t")
+                  .replace("\\b", "\b")
+                  .replace("\\r", "\r")
+                  .replace("\\f", "\f")
+                  .replace("\\\\", "\\")
+                  .replace("\\'", "\'")
+                  .replace("\\\"", "\"");
   }
 }

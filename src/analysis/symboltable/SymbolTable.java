@@ -11,7 +11,7 @@ public class SymbolTable {
   private Map<String,ClassDescriptor> classMap;
 
   public SymbolTable() {
-    classMap = new HashMap<String, ClassDescriptor>(20);
+    classMap = new HashMap<String,ClassDescriptor>(20);
   }
 
   public boolean addClass(String id, String parent) {
