@@ -69,39 +69,65 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int MULT = 34;
   /** RegularExpression Id. */
-  int AND = 35;
+  int DIV = 35;
   /** RegularExpression Id. */
-  int NOT = 36;
+  int ADD_OP = 36;
   /** RegularExpression Id. */
-  int LESS = 37;
+  int SUB_OP = 37;
   /** RegularExpression Id. */
-  int ASSIGN = 38;
+  int OR = 38;
   /** RegularExpression Id. */
-  int LPARENS = 39;
+  int AND = 39;
   /** RegularExpression Id. */
-  int RPARENS = 40;
+  int NOT = 40;
   /** RegularExpression Id. */
-  int LBRACKET = 41;
+  int LESS = 41;
   /** RegularExpression Id. */
-  int RBRACKET = 42;
+  int LESS_OR_EQUAL = 42;
   /** RegularExpression Id. */
-  int LBRACE = 43;
+  int GREATER = 43;
   /** RegularExpression Id. */
-  int RBRACE = 44;
+  int GREATER_OR_EQUAL = 44;
   /** RegularExpression Id. */
-  int COMMA = 45;
+  int EQUAL = 45;
   /** RegularExpression Id. */
-  int DOT = 46;
+  int NOT_EQUAL = 46;
   /** RegularExpression Id. */
-  int SEMI = 47;
+  int ASSIGN = 47;
   /** RegularExpression Id. */
-  int NUM = 48;
+  int ADD_ASSIGN = 48;
   /** RegularExpression Id. */
-  int ID = 49;
+  int SUB_ASSIGN = 49;
   /** RegularExpression Id. */
-  int LETTER = 50;
+  int MULT_ASSIGN = 50;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 51;
+  int DIV_ASSIGN = 51;
+  /** RegularExpression Id. */
+  int LPARENS = 52;
+  /** RegularExpression Id. */
+  int RPARENS = 53;
+  /** RegularExpression Id. */
+  int LBRACKET = 54;
+  /** RegularExpression Id. */
+  int RBRACKET = 55;
+  /** RegularExpression Id. */
+  int LBRACE = 56;
+  /** RegularExpression Id. */
+  int RBRACE = 57;
+  /** RegularExpression Id. */
+  int COMMA = 58;
+  /** RegularExpression Id. */
+  int DOT = 59;
+  /** RegularExpression Id. */
+  int SEMI = 60;
+  /** RegularExpression Id. */
+  int NUM = 61;
+  /** RegularExpression Id. */
+  int ID = 62;
+  /** RegularExpression Id. */
+  int LETTER = 63;
+  /** RegularExpression Id. */
+  int STRING_LITERAL = 64;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -143,10 +169,23 @@ public interface ParserConstants {
     "\"+\"",
     "\"-\"",
     "\"*\"",
+    "\"/\"",
+    "\"++\"",
+    "\"--\"",
+    "\"||\"",
     "\"&&\"",
     "\"!\"",
     "\"<\"",
+    "\"<=\"",
+    "\">\"",
+    "\">=\"",
+    "\"==\"",
+    "\"!=\"",
     "\"=\"",
+    "\"+=\"",
+    "\"-=\"",
+    "\"*=\"",
+    "\"/=\"",
     "\"(\"",
     "\")\"",
     "\"[\"",

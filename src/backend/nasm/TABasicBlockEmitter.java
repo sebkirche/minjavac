@@ -127,6 +127,10 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
           jump_op = "jne"; break;
         case LESS_THAN:
           jump_op = "jl"; break;
+        case LESS_OR_EQUAL:
+          jump_op = "jle"; break;
+        case GREATER:
+          jump_op = "jg"; break;
         case GREATER_OR_EQUAL:
           jump_op = "jge"; break;
       }
@@ -229,9 +233,40 @@ public class TABasicBlockEmitter implements TABasicBlockVisitor {
         emit(Nasm.OP.make("imul " + handleDest + ", " + handleB));
         break;
 
+      case DIV:
+        emit(Nasm.OP.make("push edx"));
+
+        if (!handleDest.equals("eax"))
+          emit(Nasm.OP.make("push eax"));
+
+        emit(Nasm.OP.make("mov edx, dword 0"));
+
+        if (!handleA.equals("eax"))
+          emit(Nasm.OP.make("mov eax, " + handleA));
+
+        if (isConstant(handleB)) {
+          emit(Nasm.OP.make("mov esi, " + handleB));
+          handleB = "esi";
+        }
+        
+        emit(Nasm.OP.make("idiv " + handleB));
+
+        if (!handleDest.equals("eax")) {
+          emit(Nasm.OP.make("mov " + handleDest + ", eax"));
+          emit(Nasm.OP.make("pop eax"));
+        }
+
+        emit(Nasm.OP.make("pop edx"));
+        break;
+
       case AND:
         emit(Nasm.OP.make("mov " + handleDest + ", " + handleA));
         emit(Nasm.OP.make("and " + handleDest + ", " + handleB));
+        break;
+
+      case OR:
+        emit(Nasm.OP.make("mov " + handleDest + ", " + handleA));
+        emit(Nasm.OP.make("or "  + handleDest + ", " + handleB));
         break;
 
       case NOT:

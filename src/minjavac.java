@@ -40,6 +40,7 @@ public class minjavac {
     }
     catch (ParseException e) {
       System.out.println(e.getMessage());
+      return;
     }
 
     SymbolTableBuilderVisitor symtBuilder = new SymbolTableBuilderVisitor();

@@ -241,6 +241,21 @@ public class TypeCheckerVisitor implements TypeVisitor {
     return boolT;
   }
 
+  public Type visit(Or orExp) {
+    Type expA = orExp.e1.accept(this);
+    Type expB = orExp.e2.accept(this);
+    Type boolT = BooleanType.instance();
+
+    if (!symbolTable.compareTypes(boolT, expA))
+      error(boolT, expA);
+
+    if (!symbolTable.compareTypes(boolT, expB))
+      error(boolT, expB);
+
+    orExp.setType(boolT);
+    return boolT;
+  }
+
   public Type visit(LessThan lessExp) {
     Type expA = lessExp.e1.accept(this);
     Type expB = lessExp.e2.accept(this);
@@ -254,6 +269,78 @@ public class TypeCheckerVisitor implements TypeVisitor {
 
     Type boolT = BooleanType.instance();
     lessExp.setType(boolT);
+    return boolT;
+  }
+
+  public Type visit(LessOrEqual lessOrEqualExp) {
+    Type expA = lessOrEqualExp.e1.accept(this);
+    Type expB = lessOrEqualExp.e2.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, expA))
+      error(intT, expA);
+
+    if (!symbolTable.compareTypes(intT, expB))
+      error(intT, expB);
+
+    Type boolT = BooleanType.instance();
+    lessOrEqualExp.setType(boolT);
+    return boolT;
+  }
+
+  public Type visit(Greater greaterExp) {
+    Type expA = greaterExp.e1.accept(this);
+    Type expB = greaterExp.e2.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, expA))
+      error(intT, expA);
+
+    if (!symbolTable.compareTypes(intT, expB))
+      error(intT, expB);
+
+    Type boolT = BooleanType.instance();
+    greaterExp.setType(boolT);
+    return boolT;
+  }
+
+  public Type visit(GreaterOrEqual greaterOrEqualExp) {
+    Type expA = greaterOrEqualExp.e1.accept(this);
+    Type expB = greaterOrEqualExp.e2.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, expA))
+      error(intT, expA);
+
+    if (!symbolTable.compareTypes(intT, expB))
+      error(intT, expB);
+
+    Type boolT = BooleanType.instance();
+    greaterOrEqualExp.setType(boolT);
+    return boolT;
+  }
+
+  public Type visit(Equal equalExp) {
+    Type expA = equalExp.e1.accept(this);
+    Type expB = equalExp.e2.accept(this);
+
+    if (!symbolTable.compareTypes(expA, expB))
+      error(expA, expB);
+
+    Type boolT = BooleanType.instance();
+    equalExp.setType(boolT);
+    return boolT;
+  }
+
+  public Type visit(NotEqual notEqualExp) {
+    Type expA = notEqualExp.e1.accept(this);
+    Type expB = notEqualExp.e2.accept(this);
+
+    if (!symbolTable.compareTypes(expA, expB))
+      error(expA, expB);
+
+    Type boolT = BooleanType.instance();
+    notEqualExp.setType(boolT);
     return boolT;
   }
 
@@ -299,6 +386,21 @@ public class TypeCheckerVisitor implements TypeVisitor {
       error(intT, expB);
 
     timesExp.setType(intT);
+    return intT;
+  }
+
+  public Type visit(Div divExp) {
+    Type expA = divExp.e1.accept(this);
+    Type expB = divExp.e2.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, expA))
+      error(intT, expA);
+
+    if (!symbolTable.compareTypes(intT, expB))
+      error(intT, expB);
+
+    divExp.setType(intT);
     return intT;
   }
 
@@ -419,5 +521,49 @@ public class TypeCheckerVisitor implements TypeVisitor {
     );
     id.setType(t);
     return t;
+  }
+
+  public Type visit(PrefixAdd prefixAdd) {
+    Type varT = prefixAdd.exp.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, varT))
+      error(intT, varT);
+
+    prefixAdd.setType(intT);
+    return intT;
+  }
+
+  public Type visit(PrefixSub prefixSub) {
+    Type varT = prefixSub.exp.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, varT))
+      error(intT, varT);
+
+    prefixSub.setType(intT);
+    return intT;
+  }
+
+  public Type visit(PostfixAdd postfixAdd) {
+    Type varT = postfixAdd.exp.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, varT))
+      error(intT, varT);
+
+    postfixAdd.setType(intT);
+    return intT;
+  }
+
+  public Type visit(PostfixSub postfixSub) {
+    Type varT = postfixSub.exp.accept(this);
+    Type intT = IntegerType.instance();
+
+    if (!symbolTable.compareTypes(intT, varT))
+      error(intT, varT);
+
+    postfixSub.setType(intT);
+    return intT;
   }
 }

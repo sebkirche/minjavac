@@ -31,6 +31,14 @@ public class ConditionalJump extends Jump {
         cond = Condition.GREATER_OR_EQUAL;
         break;
 
+      case LESS_OR_EQUAL:
+        cond = Condition.GREATER;
+        break;
+
+      case GREATER:
+        cond = Condition.LESS_OR_EQUAL;
+        break;
+
       case GREATER_OR_EQUAL:
         cond = Condition.LESS_THAN;
         break;

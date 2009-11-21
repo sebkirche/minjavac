@@ -202,21 +202,38 @@ public class TAModuleBuilderVisitor implements Visitor {
     lastTemp = temp;
   }
 
-  public void visit(LessThan lessExpr) {
+  public void visit(Or orExpr) {
     TAVariable a, b;
-    TAVariable temp = TANamePool.newVar("less_than", BooleanType.instance());
+    TAVariable temp = TANamePool.newVar("or", BooleanType.instance());
 
-    lessExpr.e1.accept(this);
+    orExpr.e1.accept(this);
     a = lastTemp;
 
-    lessExpr.e2.accept(this);
+    orExpr.e2.accept(this);
     b = lastTemp;
 
-    Label trueL = TANamePool.newLabel("is_less");
+    module.addInstruction(new Operation(
+      Opcode.OR, temp, a, b
+    ));
+
+    lastTemp = temp;
+  }
+
+  private void booleanTest(Exp e1, Exp e2, Condition cond) {
+    TAVariable a, b;
+    TAVariable temp = TANamePool.newVar(cond + "_than", BooleanType.instance());
+
+    e1.accept(this);
+    a = lastTemp;
+
+    e2.accept(this);
+    b = lastTemp;
+
+    Label trueL = TANamePool.newLabel("is_" + cond);
     Label nextL = TANamePool.newLabel("next");
 
     module.addInstruction(new ConditionalJump(
-      Condition.LESS_THAN, a, b, trueL
+      cond, a, b, trueL
     ));
 
     module.addInstruction(new Copy(temp, new TAConstantVar(0)));
@@ -226,6 +243,30 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(nextL);
 
     lastTemp = temp;
+  }
+
+  public void visit(LessThan lessExpr) {
+    booleanTest(lessExpr.e1, lessExpr.e2, Condition.LESS_THAN);
+  }
+
+  public void visit(LessOrEqual lessOrEqual) {
+    booleanTest(lessOrEqual.e1, lessOrEqual.e2, Condition.LESS_OR_EQUAL);
+  }
+
+  public void visit(Greater greater) {
+    booleanTest(greater.e1, greater.e2, Condition.GREATER);
+  }
+
+  public void visit(GreaterOrEqual greaterOrEqual) {
+    booleanTest(greaterOrEqual.e1, greaterOrEqual.e2, Condition.GREATER_OR_EQUAL);
+  }
+
+  public void visit(Equal equal) {
+    booleanTest(equal.e1, equal.e2, Condition.EQUAL);
+  }
+
+  public void visit(NotEqual notEqual) {
+    booleanTest(notEqual.e1, notEqual.e2, Condition.NOT_EQUAL);
   }
 
   public void visit(Plus plusExpr) {
@@ -279,6 +320,23 @@ public class TAModuleBuilderVisitor implements Visitor {
     lastTemp = temp;
   }
 
+  public void visit(Div div) {
+    TAVariable a, b;
+    TAVariable temp = TANamePool.newVar("div", IntegerType.instance());
+
+    div.e1.accept(this);
+    a = lastTemp;
+
+    div.e2.accept(this);
+    b = lastTemp;
+
+    module.addInstruction(new Operation(
+      Opcode.DIV, temp, a, b
+    ));
+
+    lastTemp = temp;
+  }
+
   public void visit(ArrayLookup lookup) {
     TAVariable temp = TANamePool.newVar("array_lookup", IntegerType.instance());
 
@@ -303,6 +361,56 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(new Operation(
       Opcode.ARRAY_LENGTH, temp, arrayVar
     ));
+
+    lastTemp = temp;
+  }
+
+  public void visit(PrefixAdd prefixAdd) {
+    Identifier var = (Identifier)prefixAdd.exp;
+    Exp add = new Plus(var, new IntegerLiteral(1));
+    Assign assign = new Assign(var, add);
+
+    visit(assign);
+    visit(var);
+  }
+
+  public void visit(PrefixSub prefixSub) {
+    Identifier var = (Identifier)prefixSub.exp;
+    Exp minus = new Minus(var, new IntegerLiteral(1));
+    Assign assign = new Assign(var, minus);
+
+    visit(assign);
+    visit(var);
+  }
+
+  public void visit(PostfixAdd postfixAdd) {
+    Identifier var = (Identifier)postfixAdd.exp;
+    Type intT = IntegerType.instance();
+    
+    TAVariable temp = TANamePool.newVar("old_" + var, intT);
+
+    visit(var);
+    module.addInstruction(new Copy(temp, lastTemp));
+
+    Exp add = new Plus(var, new IntegerLiteral(1));
+    Assign assign = new Assign(var, add);
+    visit(assign);
+
+    lastTemp = temp;
+  }
+
+  public void visit(PostfixSub postifxSub) {
+    Identifier var = (Identifier)postifxSub.exp;
+    Type intT = IntegerType.instance();
+
+    TAVariable temp = TANamePool.newVar("old_" + var, intT);
+
+    visit(var);
+    module.addInstruction(new Copy(temp, lastTemp));
+
+    Exp minus = new Minus(var, new IntegerLiteral(1));
+    Assign assign = new Assign(var, minus);
+    visit(assign);
 
     lastTemp = temp;
   }
@@ -401,64 +509,6 @@ public class TAModuleBuilderVisitor implements Visitor {
     lastTemp = getTAVariable(varId.name);
   }
 
-  private void evalBooleanJump(Exp e, Label trueL, Label falseL) {
-    if (e instanceof False) {
-      module.addInstruction(new Jump(falseL));
-    }
-    else if (e instanceof True) {
-      module.addInstruction(new Jump(trueL));
-    }
-    else if (e instanceof Not) {
-      evalBooleanJump(((Not)e).boolExpr, falseL, trueL);
-    }
-    else if (e instanceof And) {
-      And andExpr = (And)e;
-
-      Label cont = TANamePool.newLabel("and_cont");
-      evalBooleanJump(andExpr.e1, cont, falseL);
-
-      module.addInstruction(cont);
-      evalBooleanJump(andExpr.e2, trueL, falseL);
-    }
-    else if (e instanceof LessThan) {
-      LessThan lessExpr = (LessThan)e;
-
-      lessExpr.e1.accept(this);
-      TAVariable a = lastTemp;
-
-      lessExpr.e2.accept(this);
-      TAVariable b = lastTemp;
-
-      module.addInstruction(new ConditionalJump(
-        Condition.LESS_THAN, a, b, trueL
-      ));
-
-      module.addInstruction(new Jump(falseL));
-    }
-    else if (e instanceof Identifier) {
-      TAVariable boolVar = getTAVariable(((Identifier)e).name);
-
-      module.addInstruction(new ConditionalJump(
-        Condition.IS_TRUE, boolVar, null, trueL
-      ));
-
-      module.addInstruction(new Jump(falseL));
-    }
-    else if (e instanceof Call) {
-      e.accept(this);
-      TAVariable returnVar = lastTemp;
-      
-      module.addInstruction(new ConditionalJump(
-        Condition.IS_TRUE, returnVar, null, trueL
-      ));
-
-      module.addInstruction(new Jump(falseL));
-    }
-    else {
-      throw new IllegalArgumentException("evalBooleanJump");
-    }
-  }
-
   public void visit(VarDecl varD) {
     throw new IllegalArgumentException("visit@VarDecl");
   }
@@ -500,5 +550,95 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(new Copy(temp, fv));
 
     return temp;
+  }
+
+  private void evalConditionJump(
+        Condition cond, Exp e1, Exp e2, Label trueL, Label falseL) {
+    
+      e1.accept(this);
+      TAVariable a = lastTemp;
+
+      e2.accept(this);
+      TAVariable b = lastTemp;
+
+      module.addInstruction(new ConditionalJump(
+        cond, a, b, trueL
+      ));
+
+      module.addInstruction(new Jump(falseL));
+  }
+
+  private void evalBooleanJump(Exp e, Label trueL, Label falseL) {
+    if (e instanceof False) {
+      module.addInstruction(new Jump(falseL));
+    }
+    else if (e instanceof True) {
+      module.addInstruction(new Jump(trueL));
+    }
+    else if (e instanceof Not) {
+      evalBooleanJump(((Not)e).boolExpr, falseL, trueL);
+    }
+    else if (e instanceof And) {
+      And andExpr = (And)e;
+      Label cont = TANamePool.newLabel("and_cont");
+
+      evalBooleanJump(andExpr.e1, cont, falseL);
+      module.addInstruction(cont);
+      evalBooleanJump(andExpr.e2, trueL, falseL);
+    }
+    else if (e instanceof Or) {
+      Or orExpr = (Or)e;
+      Label cont = TANamePool.newLabel("or_cont");
+
+      evalBooleanJump(orExpr.e1, trueL, cont);
+      module.addInstruction(cont);
+      evalBooleanJump(orExpr.e2, trueL, falseL);
+    }
+    else if (e instanceof LessThan) {
+      LessThan l = (LessThan)e;
+      evalConditionJump(Condition.LESS_THAN, l.e1, l.e2, trueL, falseL);
+    }
+    else if (e instanceof LessOrEqual) {
+      LessOrEqual le = (LessOrEqual)e;
+      evalConditionJump(Condition.LESS_OR_EQUAL, le.e1, le.e2, trueL, falseL);
+    }
+    else if (e instanceof Greater) {
+      Greater g = (Greater)e;
+      evalConditionJump(Condition.GREATER, g.e1, g.e2, trueL, falseL);
+    }
+    else if (e instanceof GreaterOrEqual) {
+      GreaterOrEqual ge = (GreaterOrEqual)e;
+      evalConditionJump(Condition.GREATER_OR_EQUAL, ge.e1, ge.e2, trueL, falseL);
+    }
+    else if (e instanceof Equal) {
+      Equal eq = (Equal)e;
+      evalConditionJump(Condition.EQUAL, eq.e1, eq.e2, trueL, falseL);
+    }
+    else if (e instanceof NotEqual) {
+      NotEqual neq = (NotEqual)e;
+      evalConditionJump(Condition.NOT_EQUAL, neq.e1, neq.e2, trueL, falseL);
+    }
+    else if (e instanceof Identifier) {
+      TAVariable boolVar = getTAVariable(((Identifier)e).name);
+
+      module.addInstruction(new ConditionalJump(
+        Condition.IS_TRUE, boolVar, null, trueL
+      ));
+
+      module.addInstruction(new Jump(falseL));
+    }
+    else if (e instanceof Call) {
+      e.accept(this);
+      TAVariable returnVar = lastTemp;
+
+      module.addInstruction(new ConditionalJump(
+        Condition.IS_TRUE, returnVar, null, trueL
+      ));
+
+      module.addInstruction(new Jump(falseL));
+    }
+    else {
+      throw new IllegalArgumentException("evalBooleanJump");
+    }
   }
 }

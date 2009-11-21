@@ -194,6 +194,11 @@ public final class NasmUtils {
     return RegisterPool.registerNames.contains(handle);
   }
 
+  public static boolean isConstant(String handle) {
+    handle = handle.replace("dword", "").trim();
+    return !handle.isEmpty() && Character.isDigit(handle.charAt(0));
+  }
+
   public static Set<String> emptySet() {
     return new HashSet<String>();
   }

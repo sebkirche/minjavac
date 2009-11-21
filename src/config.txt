@@ -1,11 +1,11 @@
-# Nasm assembler invocation line
+# nasm assembler invocation line
 # %s -> <source_name>.nasm
 # %s -> <object_code_output>.o
 
 nasm_cmd = nasm -f win32 -O99 %s -o %s
 
 
-# Compiler and linker invocation line
+# compiler/linker invocation line
 # %s -> <object_code_output>.o
 # %s -> runtime_lib
 # %s -> <source_name>.exe
@@ -13,6 +13,6 @@ nasm_cmd = nasm -f win32 -O99 %s -o %s
 compiler_cmd = gcc %s %s -o %s
 
 
-# C runtime library path
+# c runtime library path
 
 runtime_lib_path = C:\\GiulianoXT\\workspace\\MinJavaC_ext\\test\\runtime.c

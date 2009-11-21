@@ -201,9 +201,39 @@ public class SymbolTableBuilderVisitor implements Visitor {
     andExp.e2.accept(this);
   }
 
+  public void visit(Or orExp) {
+    orExp.e1.accept(this);
+    orExp.e2.accept(this);
+  }
+
   public void visit(LessThan lessExp) {
     lessExp.e1.accept(this);
     lessExp.e2.accept(this);
+  }
+
+  public void visit(LessOrEqual lessOrEqualExp) {
+    lessOrEqualExp.e1.accept(this);
+    lessOrEqualExp.e2.accept(this);
+  }
+
+  public void visit(Greater greaterExp) {
+    greaterExp.e1.accept(this);
+    greaterExp.e2.accept(this);
+  }
+
+  public void visit(GreaterOrEqual greaterOrEqualExp) {
+    greaterOrEqualExp.e1.accept(this);
+    greaterOrEqualExp.e2.accept(this);
+  }
+
+  public void visit(Equal equalExp) {
+    equalExp.e1.accept(this);
+    equalExp.e2.accept(this);
+  }
+
+  public void visit(NotEqual notEqualExp) {
+    notEqualExp.e1.accept(this);
+    notEqualExp.e2.accept(this);
   }
 
   public void visit(Plus plusExp) {
@@ -221,6 +251,11 @@ public class SymbolTableBuilderVisitor implements Visitor {
     timesExp.e2.accept(this);
   }
 
+  public void visit(Div divExp) {
+    divExp.e1.accept(this);
+    divExp.e2.accept(this);
+  }
+
   public void visit(ArrayLookup arrayLookup) {
     arrayLookup.arrayExpr.accept(this);
     arrayLookup.indexExpr.accept(this);
@@ -230,9 +265,24 @@ public class SymbolTableBuilderVisitor implements Visitor {
     arrayLength.arrayExpr.accept(this);
   }
 
+  public void visit(PrefixAdd prefixAddExp) {
+    prefixAddExp.exp.accept(this);
+  }
+
+  public void visit(PostfixAdd postfixAddExp) {
+    postfixAddExp.exp.accept(this);
+  }
+
+  public void visit(PrefixSub prefixSubExp) {
+    prefixSubExp.exp.accept(this);
+  }
+
+  public void visit(PostfixSub postfixSubExp) {
+    postfixSubExp.exp.accept(this);
+  }
+
   public void visit(Call callStmt) {
     callStmt.objectExpr.accept(this);
-    //checkMethod(callStmt.i.toString());
 
     for (Exp expr : callStmt.paramExprList.getList())
       expr.accept(this);

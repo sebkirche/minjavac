@@ -66,12 +66,26 @@ TOKEN : /* Operators */
    < ADD  : "+" >
  | < SUB  : "-" >
  | < MULT : "*" >
+ | < DIV  : "/" >
 
+ | < ADD_OP : "++" >
+ | < SUB_OP : "--" >
+
+ | < OR   : "||" >
  | < AND  : "&&" >
  | < NOT  : "!" >
  | < LESS : "<" >
+ | < LESS_OR_EQUAL : "<=" >
+ | < GREATER : ">" >
+ | < GREATER_OR_EQUAL : ">=" >
+ | < EQUAL : "==" >
+ | < NOT_EQUAL : "!=" >
 
  | < ASSIGN : "=" >
+ | < ADD_ASSIGN : "+=" >
+ | < SUB_ASSIGN : "-=" >
+ | < MULT_ASSIGN : "*=" >
+ | < DIV_ASSIGN : "/=" >
 }
 
 
@@ -93,7 +107,7 @@ TOKEN : /* Separators */
 TOKEN : /* Numbers */
 {
   < NUM : "0" | ["1"-"9"](["0"-"9"])* >
-} 
+}
 
 
 TOKEN : /* Identifiers */
@@ -334,7 +348,8 @@ void VarDeclarationOrStatement(VarDeclList vl, StatementList stl) :
      stmt = ForStatement() |
      stmt = PrintIntStatement() |
      stmt = PrintStringStatement() |
-     stmt = ThisMethodCallStmt()
+     stmt = ThisMethodCallStmt() |
+     stmt = PrefixOp()
    )
    { stl.addElement(stmt); }
    Statements(stl)
@@ -405,7 +420,8 @@ Statement Statement() :
      stmt = ForStatement() |
      stmt = PrintIntStatement() |
      stmt = PrintStringStatement() |
-     stmt = ThisMethodCallStmt()
+     stmt = ThisMethodCallStmt() |
+     stmt = PrefixOp()
    )
    { return stmt; }
  |
@@ -471,15 +487,39 @@ Statement ForStatement() :
 
 void ForStatementList(StatementList stl) :
 {
-  Identifier id;
-  Exp val;
+  Statement stmt;
 }
 {
-  id = Identifier() <ASSIGN> val = Expression()
-  { stl.addElement(new Assign(id, val)); }
+  stmt = ForCompoundAssignment() { stl.addElement(stmt); }
+  (<COMMA> stmt = ForCompoundAssignment() { stl.addElement(stmt); })*
+}
 
-  (<COMMA> id = Identifier() <ASSIGN> val = Expression()
-  { stl.addElement(new Assign(id, val)); })*
+
+Statement ForCompoundAssignment() :
+{
+  Exp indexExp, tmp;
+  Statement assign;
+  Identifier id;
+  Identifier voidId = new Identifier("void@", null);
+}
+{
+    id = Identifier()
+    (
+        <LBRACKET> indexExp = Expression() <RBRACKET>
+        assign = CompoundArrayAssignment(id, indexExp)
+      |
+        <ADD_OP> { assign = new Assign(voidId, new PostfixAdd(id)); }
+      |
+        <SUB_OP> { assign = new Assign(voidId, new PostfixSub(id)); }
+      |
+        assign = CompoundAssignment(id)
+    )
+    { return assign; }
+  |
+    ( <ADD_OP> id = Identifier() { tmp = new PrefixAdd(id); }
+     |
+      <SUB_OP> id = Identifier() { tmp = new PrefixSub(id); } )
+    { return new Assign(voidId, tmp); }
 }
 
 
@@ -502,38 +542,70 @@ Statement PrintStringStatement() :
   { return new PrintString(s); }
 }
 
+Statement CompoundAssignment(Identifier var) :
+{
+  Exp v;
+}
+{
+   (  <ASSIGN>      v = Expression()
+    | <ADD_ASSIGN>  v = Expression() { v = new Plus(var, v); }
+    | <SUB_ASSIGN>  v = Expression() { v = new Minus(var, v); }
+    | <MULT_ASSIGN> v = Expression() { v = new Times(var, v); }
+    | <DIV_ASSIGN>  v = Expression() { v = new Div(var, v); }
+   ) <SEMI>
+   { return new Assign(var, v); }
+}
+
+
+Statement CompoundArrayAssignment(Identifier arrayVar, Exp indexExp) :
+{
+  Exp v;
+  Exp cell = new ArrayLookup(arrayVar, indexExp);
+}
+{
+  (  <ASSIGN>      v = Expression()
+   | <ADD_ASSIGN>  v = Expression() { v = new Plus(cell, v); }
+   | <SUB_ASSIGN>  v = Expression() { v = new Minus(cell, v); }
+   | <MULT_ASSIGN> v = Expression() { v = new Times(cell, v); }
+   | <DIV_ASSIGN>  v = Expression() { v = new Div(cell, v); }
+  ) <SEMI>
+  { return new ArrayAssign(arrayVar, indexExp, v); }
+}
 
 Statement IdentifierStatementTail(Identifier id) :
 {
   Exp e1, e2;
   ExpList el = new ExpList();
-  Identifier voidId;
+  Identifier idM;
+  Identifier voidId = new Identifier("void@", id.getToken());
   Call callExp;
+  Statement assign;
 }
 {
     <LBRACKET> e1 = Expression() <RBRACKET>
-    <ASSIGN> e2 = Expression() <SEMI>
-    { return new ArrayAssign(id, e1, e2); }
+    assign = CompoundArrayAssignment(id, e1)
+    { return assign; }
   |
-    <ASSIGN> e1 = Expression() <SEMI>
-    { return new Assign(id, e1); }
+    assign = CompoundAssignment(id)
+    { return assign; }
   |
-    { Identifier idM; }
     <DOT> idM = Identifier() <LPARENS> [ExpressionList(el)] <RPARENS> <SEMI>
     {
-      voidId = new Identifier("void@", id.getToken());
       callExp = new Call(new Identifier(id), idM, el);
-
       return new Assign(voidId, callExp);
     }
   |
     <LPARENS> [ExpressionList(el)] <RPARENS> <SEMI>
     {
-      voidId = new Identifier("void@", id.getToken());
       callExp = new Call(new This(), id, el);
-
       return new Assign(voidId, callExp);
     }
+  |
+    <ADD_OP> <SEMI>
+    { return new Assign(voidId, new PostfixAdd(id)); }
+  |
+    <SUB_OP> <SEMI>
+    { return new Assign(voidId, new PostfixSub(id)); }
 }
 
 
@@ -557,13 +629,41 @@ Statement ThisMethodCallStmt() :
 }
 
 
+Statement PrefixOp() :
+{
+  Identifier id;
+  Identifier voidId = new Identifier("void@", null);
+}
+{
+    <ADD_OP> id = Identifier() <SEMI>
+    { return new Assign(voidId, new PrefixAdd(id)); }
+  |
+    <SUB_OP> id = Identifier() <SEMI>
+    { return new Assign(voidId, new PrefixSub(id)); }
+}
+
+
 Exp Expression() :
 {
   Exp e;
 }
 {
-  e = AndExpression()
+  e = OrExpression()
   { return e; }
+}
+
+
+Exp OrExpression() :
+{
+  Exp x, y;
+}
+{
+  x = AndExpression()
+  (
+    <OR> y = AndExpression()
+    { x = new Or(x, y); }
+  )*
+  { return x; }
 }
 
 
@@ -572,24 +672,39 @@ Exp AndExpression() :
   Exp x, y;
 }
 {
-  x = LessThanExpression()
+  x = CompareExpression()
   (
-    <AND> y = LessThanExpression()
+    <AND> y = CompareExpression()
     { x = new And(x, y); }
   )*
   { return x; }
 }
 
 
-Exp LessThanExpression() :
+Exp CompareExpression() :
 {
   Exp x, y;
 }
 {
   x = AdditiveExpression()
   [
-    <LESS> y = AdditiveExpression()
-    { x = new LessThan(x, y); }
+      <LESS> y = AdditiveExpression()
+      { x = new LessThan(x, y); }
+    |
+      <LESS_OR_EQUAL> y = AdditiveExpression()
+      { x = new LessOrEqual(x, y); }
+    |
+      <GREATER> y = AdditiveExpression()
+      { x = new Greater(x, y); }
+    |
+      <GREATER_OR_EQUAL> y = AdditiveExpression()
+      { x = new GreaterOrEqual(x, y); }
+    |
+      <EQUAL> y = AdditiveExpression()
+      { x = new Equal(x, y); }
+    |
+      <NOT_EQUAL> y = AdditiveExpression()
+      { x = new NotEqual(x, y); }
   ]
   { return x; }
 }
@@ -617,8 +732,11 @@ Exp TimesExpression() :
 {
   x = PrefixExpression()
   (
-    <MULT> y = PrefixExpression()
-    { x = new Times(x, y); }
+      <MULT> y = PrefixExpression()
+      { x = new Times(x, y); }
+    |
+      <DIV>  y = PrefixExpression()
+      { x = new Div(x, y); }
   )*
   { return x; }
 }
@@ -630,10 +748,17 @@ Exp PrefixExpression() :
   int c = 0;
 }
 {
-  (<NOT> { ++c; })*
-  x = PostFixExpression()
-  { for (int i = 0; i < c; ++i) x = new Not(x); }
-  { return x; }
+    (<NOT> { ++c; })* x = PostFixExpression()
+    {
+      for (int i = 0; i < c; ++i) x = new Not(x);
+      return x;
+    }
+  |
+    <ADD_OP> x = PostFixExpression()
+    { return new PrefixAdd(x); }
+  |
+    <SUB_OP> x = PostFixExpression()
+    { return new PrefixSub(x); }
 }
 
 
@@ -644,10 +769,11 @@ Exp PostFixExpression() :
 {
   pr = PrimaryExpression()
   [
-     (  e = ArrayLookup(pr)
-      | e = ArrayLengthOrMethodCall(pr)
-      | e = ThisMethodCall(pr) )
-     { return e; }
+     e = ArrayLookup(pr) { return e; }
+   | e = ArrayLengthOrMethodCall(pr) { return e; }
+   | e = ThisMethodCall(pr) { return e; }
+   | <ADD_OP> { return new PostfixAdd(pr); }
+   | <SUB_OP> { return new PostfixSub(pr); }
   ]
   { return pr; }
 }
