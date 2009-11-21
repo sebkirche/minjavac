@@ -51,55 +51,57 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int WHILE = 25;
   /** RegularExpression Id. */
-  int PUBLIC = 26;
+  int FOR = 26;
   /** RegularExpression Id. */
-  int RETURN = 27;
+  int PUBLIC = 27;
   /** RegularExpression Id. */
-  int STATIC = 28;
+  int RETURN = 28;
   /** RegularExpression Id. */
-  int EXTENDS = 29;
+  int STATIC = 29;
   /** RegularExpression Id. */
-  int INTERFACE = 30;
+  int EXTENDS = 30;
   /** RegularExpression Id. */
-  int ADD = 31;
+  int INTERFACE = 31;
   /** RegularExpression Id. */
-  int SUB = 32;
+  int ADD = 32;
   /** RegularExpression Id. */
-  int MULT = 33;
+  int SUB = 33;
   /** RegularExpression Id. */
-  int AND = 34;
+  int MULT = 34;
   /** RegularExpression Id. */
-  int NOT = 35;
+  int AND = 35;
   /** RegularExpression Id. */
-  int LESS = 36;
+  int NOT = 36;
   /** RegularExpression Id. */
-  int ASSIGN = 37;
+  int LESS = 37;
   /** RegularExpression Id. */
-  int LPARENS = 38;
+  int ASSIGN = 38;
   /** RegularExpression Id. */
-  int RPARENS = 39;
+  int LPARENS = 39;
   /** RegularExpression Id. */
-  int LBRACKET = 40;
+  int RPARENS = 40;
   /** RegularExpression Id. */
-  int RBRACKET = 41;
+  int LBRACKET = 41;
   /** RegularExpression Id. */
-  int LBRACE = 42;
+  int RBRACKET = 42;
   /** RegularExpression Id. */
-  int RBRACE = 43;
+  int LBRACE = 43;
   /** RegularExpression Id. */
-  int COMMA = 44;
+  int RBRACE = 44;
   /** RegularExpression Id. */
-  int DOT = 45;
+  int COMMA = 45;
   /** RegularExpression Id. */
-  int SEMI = 46;
+  int DOT = 46;
   /** RegularExpression Id. */
-  int NUM = 47;
+  int SEMI = 47;
   /** RegularExpression Id. */
-  int ID = 48;
+  int NUM = 48;
   /** RegularExpression Id. */
-  int LETTER = 49;
+  int ID = 49;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 50;
+  int LETTER = 50;
+  /** RegularExpression Id. */
+  int STRING_LITERAL = 51;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -132,6 +134,7 @@ public interface ParserConstants {
     "\"else\"",
     "\"class\"",
     "\"while\"",
+    "\"for\"",
     "\"public\"",
     "\"return\"",
     "\"static\"",

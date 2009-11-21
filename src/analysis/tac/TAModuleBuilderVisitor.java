@@ -108,6 +108,27 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.addInstruction(falseL);
   }
 
+  public void visit(For forStmt) {
+    for (Statement stmt : forStmt.init.getList())
+      stmt.accept(this);
+
+    Label loop = TANamePool.newLabel("loop");
+    Label trueL = TANamePool.newLabel("for_true");
+    Label falseL = TANamePool.newLabel("for_false");
+
+    module.addInstruction(loop);
+    evalBooleanJump(forStmt.boolExpr, trueL, falseL);
+
+    module.addInstruction(trueL);
+
+    forStmt.body.accept(this);
+    for (Statement stmt : forStmt.step.getList())
+      stmt.accept(this);
+    
+    module.addInstruction(new Jump(loop));
+    module.addInstruction(falseL);
+  }
+
   public void visit(Print printStmt) {
     printStmt.intExpr.accept(this);
 

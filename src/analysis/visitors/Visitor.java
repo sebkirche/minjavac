@@ -18,6 +18,7 @@ public interface Visitor {
   public void visit(Block n);
   public void visit(If n);
   public void visit(While n);
+  public void visit(For n);
   public void visit(Print n);
   public void visit(PrintString n);
   public void visit(Assign n);

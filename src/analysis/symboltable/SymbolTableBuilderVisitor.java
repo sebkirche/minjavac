@@ -167,6 +167,18 @@ public class SymbolTableBuilderVisitor implements Visitor {
     whileStmt.stmt.accept(this);
   }
 
+  public void visit(For forStmt) {
+    for (Statement stmt : forStmt.init.getList())
+      stmt.accept(this);
+
+    forStmt.boolExpr.accept(this);
+
+    for (Statement stmt : forStmt.step.getList())
+      stmt.accept(this);
+
+    forStmt.body.accept(this);
+  }
+
   public void visit(Print printStmt) {
     printStmt.intExpr.accept(this);
   }

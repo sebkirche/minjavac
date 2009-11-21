@@ -1,7 +1,6 @@
 PARSER_BEGIN(Parser)
 package parser;
 
-import util.NamePool;
 import analysis.syntaxtree.*;
 
 public class Parser {
@@ -53,6 +52,7 @@ TOKEN : /* Keywords */
  | < ELSE      : "else" >
  | < CLASS     : "class" >
  | < WHILE     : "while" >
+ | < FOR       : "for" >
  | < PUBLIC    : "public" >
  | < RETURN    : "return" >
  | < STATIC    : "static" >
@@ -331,6 +331,7 @@ void VarDeclarationOrStatement(VarDeclList vl, StatementList stl) :
      stmt = Block() |
      stmt = IfStatement() |
      stmt = WhileStatement() |
+     stmt = ForStatement() |
      stmt = PrintIntStatement() |
      stmt = PrintStringStatement() |
      stmt = ThisMethodCallStmt()
@@ -401,6 +402,7 @@ Statement Statement() :
      stmt = Block() |
      stmt = IfStatement() |
      stmt = WhileStatement() |
+     stmt = ForStatement() |
      stmt = PrintIntStatement() |
      stmt = PrintStringStatement() |
      stmt = ThisMethodCallStmt()
@@ -444,6 +446,40 @@ Statement WhileStatement() :
 {
   <WHILE> <LPARENS> e = Expression() <RPARENS> stmt = Statement()
   { return new While(e, stmt); }
+}
+
+
+Statement ForStatement() :
+{
+  Exp bool = new True();
+  Statement body;
+  StatementList init = new StatementList();
+  StatementList step = new StatementList();
+}
+{
+  <FOR>
+  <LPARENS>
+    [ForStatementList(init)] <SEMI>
+    [bool = Expression()]    <SEMI>
+    [ForStatementList(step)]
+  <RPARENS>
+  body = Statement()
+
+  { return new For(init, bool, step, body); }
+}
+
+
+void ForStatementList(StatementList stl) :
+{
+  Identifier id;
+  Exp val;
+}
+{
+  id = Identifier() <ASSIGN> val = Expression()
+  { stl.addElement(new Assign(id, val)); }
+
+  (<COMMA> id = Identifier() <ASSIGN> val = Expression()
+  { stl.addElement(new Assign(id, val)); })*
 }
 
 

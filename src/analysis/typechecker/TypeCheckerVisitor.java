@@ -171,6 +171,23 @@ public class TypeCheckerVisitor implements TypeVisitor {
     return null;
   }
 
+  public Type visit(For forStmt) {
+    for (Statement stmt : forStmt.init.getList())
+      stmt.accept(this);
+
+    Type expT = forStmt.boolExpr.accept(this);
+    Type booleanT = BooleanType.instance();
+
+    if (!symbolTable.compareTypes(booleanT, expT))
+      error(booleanT, expT);
+
+    for (Statement stmt : forStmt.step.getList())
+      stmt.accept(this);
+
+    forStmt.body.accept(this);
+    return null;
+  }
+
   public Type visit(Print printStmt) {
     Type expT = printStmt.intExpr.accept(this);
     Type intT = IntegerType.instance();
