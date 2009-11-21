@@ -23,17 +23,17 @@ public class NasmGenerator {
     emit(Nasm.OTHER.make("extern _alloc, _new_array, _print_int, _print_str"));
     emit(Nasm.OTHER.make("\n"));
 
-    emit(Nasm.OTHER.make("; vt definitions"));
-    emit(Nasm.DATA_SEGMENT.make());
-    emitVirtualTableDefinitions();
-    emit(Nasm.OTHER.make("\n"));
-
     if (TAModule.getInstance().hasConstants()) {
       emit(Nasm.OTHER.make("; constant definitions"));
       emit(Nasm.DATA_SEGMENT.make());
       emitConstantDefinitions();
       emit(Nasm.OTHER.make("\n"));
     }
+
+    emit(Nasm.OTHER.make("; vt definitions"));
+    emit(Nasm.DATA_SEGMENT.make());
+    emitVirtualTableDefinitions();
+    emit(Nasm.OTHER.make("\n"));
 
     emit(Nasm.OTHER.make("; constructors"));
     emit(Nasm.TEXT_SEGMENT.make());

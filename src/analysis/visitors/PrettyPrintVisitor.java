@@ -143,6 +143,10 @@ public class PrettyPrintVisitor implements Visitor {
     System.out.print("int");
   }
 
+  public void visit(VoidType v) {
+    System.out.print("void");
+  }
+
   // String s;
   public void visit(IdentifierType n) {
     System.out.print(n.className);

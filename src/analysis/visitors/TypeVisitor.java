@@ -13,6 +13,7 @@ public interface TypeVisitor {
   public Type visit(IntArrayType n);
   public Type visit(BooleanType n);
   public Type visit(IntegerType n);
+  public Type visit(VoidType v);
   public Type visit(IdentifierType n);
   public Type visit(Block n);
   public Type visit(If n);

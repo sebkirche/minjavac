@@ -13,6 +13,7 @@ public interface Visitor {
   public void visit(IntArrayType n);
   public void visit(BooleanType n);
   public void visit(IntegerType n);
+  public void visit(VoidType n);
   public void visit(IdentifierType n);
   public void visit(Block n);
   public void visit(If n);

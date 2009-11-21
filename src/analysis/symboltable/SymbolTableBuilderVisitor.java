@@ -137,18 +137,15 @@ public class SymbolTableBuilderVisitor implements Visitor {
       error("Parameter", param.paramId, "is already defined");
   }
 
-  public void visit(IntArrayType n) {
-  }
+  public void visit(IntArrayType n) { }
 
-  public void visit(BooleanType n) {
-  }
+  public void visit(BooleanType n) { }
 
-  public void visit(IntegerType n) {
-  }
+  public void visit(IntegerType n) { }
 
-  public void visit(IdentifierType n) {
-    // só checa erro de tipo identificador na checagem de tipo
-  }
+  public void visit(IdentifierType n) { }
+
+  public void visit(VoidType v) { }
 
   public void visit(Block block) {
     for (Statement stmt : block.stmtList.getList())

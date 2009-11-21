@@ -1,6 +1,7 @@
 PARSER_BEGIN(Parser)
 package parser;
 
+import util.NamePool;
 import analysis.syntaxtree.*;
 
 public class Parser {
@@ -171,13 +172,13 @@ ClassDecl ClassDeclaration() :
 ClassDecl ClassDeclarationTail(Identifier name) :
 {
   Identifier basec;
-  VarDeclList vl;
+  VarDeclList vl = new VarDeclList();
   MethodDeclList ml;
 }
 {
   <EXTENDS> basec = Identifier()
   <LBRACE>
-    vl = VarDeclarationList()
+    VarDeclarationList(vl)
     ml = MethodDeclarationList()
   <RBRACE>
   { return new ClassDeclExtends(name, basec, vl, ml); }
@@ -185,21 +186,17 @@ ClassDecl ClassDeclarationTail(Identifier name) :
   |
 
   <LBRACE>
-    vl = VarDeclarationList()
+    VarDeclarationList(vl)
     ml = MethodDeclarationList()
   <RBRACE>
   { return new ClassDeclSimple(name, vl, ml); }
 }
 
 
-VarDeclList VarDeclarationList() :
+void VarDeclarationList(VarDeclList vl) :
+{ }
 {
-  VarDeclList vl = new VarDeclList();
-  VarDecl v;
-}
-{
-  (v = VarDeclaration() { vl.addElement(v); })*
-  { return vl; }
+  (VarDeclaration(vl))*
 }
 
 
@@ -214,14 +211,15 @@ MethodDeclList MethodDeclarationList() :
 }
 
 
-VarDecl VarDeclaration() :
+void VarDeclaration(VarDeclList vl) :
 {
   Type t;
   Identifier i;
 }
 {
-  t = Type() i = Identifier() <SEMI>
-  { return new VarDecl(t, i); }
+  t = Type() i = Identifier() { vl.addElement(new VarDecl(t, i)); }
+  (<COMMA>   i = Identifier() { vl.addElement(new VarDecl(t, i)); })*
+  <SEMI>
 }
 
 
@@ -233,6 +231,9 @@ MethodDecl MethodDeclaration() :
   VarDeclList varL = new VarDeclList();
   StatementList stmtL = new StatementList();
   Exp returnE;
+
+  Identifier voidId = new Identifier("void@", null);
+  varL.addElement(new VarDecl(VoidType.instance(), voidId));
 }
 {
   <PUBLIC> returnT = Type() name = Identifier()
@@ -327,7 +328,8 @@ void VarDeclarationOrStatement(VarDeclList vl, StatementList stl) :
      stmt = IfStatement() |
      stmt = WhileStatement() |
      stmt = PrintIntStatement() |
-     stmt = PrintStringStatement()
+     stmt = PrintStringStatement() |
+     stmt = ThisMethodCallStmt()
    )
    { stl.addElement(stmt); }
    Statements(stl)
@@ -342,9 +344,20 @@ void VarDeclarationTail(
   Identifier id;
 }
 {
-  id = Identifier() <SEMI> 
-  { vl.addElement(new VarDecl(t, id)); }
+  singleVarDecl(t,vl,stl) (<COMMA> singleVarDecl(t,vl,stl))* <SEMI>
   VarDeclarationOrStatement(vl, stl)
+}
+
+
+void singleVarDecl(Type t, VarDeclList vl, StatementList stl) :
+{
+  Identifier id;
+  Exp e;
+}
+{
+  id = Identifier()
+  [<ASSIGN> e = Expression() { stl.addElement(new Assign(id, e)); }]
+  { vl.addElement(new VarDecl(t, id)); }
 }
 
 
@@ -353,13 +366,10 @@ void IdentifierDeclarationOrStatement(
 {
   Identifier id2;
   Statement stmt;
+  Type t = new IdentifierType(id1.toString());
 }
 {
-   id2 = Identifier() <SEMI>
-   {
-     Type t = new IdentifierType(id1.toString());
-     vl.addElement(new VarDecl(t, id2));
-   }
+   singleVarDecl(t,vl,stl) (<COMMA> singleVarDecl(t,vl,stl))* <SEMI>
    VarDeclarationOrStatement(vl, stl)
  |
    stmt = IdentifierStatementTail(id1)
@@ -388,7 +398,8 @@ Statement Statement() :
      stmt = IfStatement() |
      stmt = WhileStatement() |
      stmt = PrintIntStatement() |
-     stmt = PrintStringStatement()
+     stmt = PrintStringStatement() |
+     stmt = ThisMethodCallStmt()
    )
    { return stmt; }
  |
@@ -455,6 +466,9 @@ Statement PrintStringStatement() :
 Statement IdentifierStatementTail(Identifier id) :
 {
   Exp e1, e2;
+  ExpList el = new ExpList();
+  Identifier voidId;
+  Call callExp;
 }
 {
     <LBRACKET> e1 = Expression() <RBRACKET>
@@ -463,6 +477,43 @@ Statement IdentifierStatementTail(Identifier id) :
   |
     <ASSIGN> e1 = Expression() <SEMI>
     { return new Assign(id, e1); }
+  |
+    { Identifier idM; }
+    <DOT> idM = Identifier() <LPARENS> [ExpressionList(el)] <RPARENS> <SEMI>
+    {
+      voidId = new Identifier("void@", id.getToken());
+      callExp = new Call(new Identifier(id), idM, el);
+
+      return new Assign(voidId, callExp);
+    }
+  |
+    <LPARENS> [ExpressionList(el)] <RPARENS> <SEMI>
+    {
+      voidId = new Identifier("void@", id.getToken());
+      callExp = new Call(new This(), id, el);
+
+      return new Assign(voidId, callExp);
+    }
+}
+
+
+Statement ThisMethodCallStmt() :
+{
+  Identifier mId;
+  ExpList el = new ExpList();
+  Identifier voidId;
+  Call callExp;
+}
+{
+  <THIS> <DOT> mId = Identifier()
+  <LPARENS> [ExpressionList(el)] <RPARENS>
+  <SEMI>
+  {
+    voidId = new Identifier("void@", mId.getToken());
+    callExp = new Call(new This(), mId, el);
+
+    return new Assign(voidId, callExp);
+  }
 }
 
 
@@ -553,7 +604,9 @@ Exp PostFixExpression() :
 {
   pr = PrimaryExpression()
   [
-     (e = ArrayLookup(pr) | e = ArrayLengthOrMethodCall(pr))
+     (  e = ArrayLookup(pr)
+      | e = ArrayLengthOrMethodCall(pr)
+      | e = ThisMethodCall(pr) )
      { return e; }
   ]
   { return pr; }
@@ -591,6 +644,22 @@ Exp ArrayLengthOrMethodCallTail(Exp pr) :
  |
    id = Identifier() <LPARENS> [ExpressionList(el)] <RPARENS>
    { return new Call(pr, id, el); }
+}
+
+
+Exp ThisMethodCall(Exp pr) :
+{
+  ExpList el = new ExpList();
+}
+{
+  <LPARENS> [ExpressionList(el)] <RPARENS>
+  {
+    if (!(pr instanceof Identifier))
+      throw generateParseException();
+
+    Identifier mId = (Identifier)pr;
+    return new Call(new This(), mId, el);
+ }
 }
 
 

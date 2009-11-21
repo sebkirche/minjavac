@@ -122,6 +122,10 @@ public class SymbolTable {
       return false;
     }
 
+    if (t1 instanceof VoidType || t2 instanceof VoidType) {
+      return true;
+    }
+
     if (t1 instanceof IntegerType && t2 instanceof IntegerType) {
       return true;
     }

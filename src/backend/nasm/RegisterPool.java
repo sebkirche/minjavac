@@ -140,13 +140,13 @@ public class RegisterPool {
    */
   public void removeFromRegister(String reg, String var) {
     if (isDead(var)) {
-      debug("dead " + var);
+      //debug("dead " + var);
       varDescriptor(var).clear();
     } else {
       VarGenDescriptor varD = varDescriptor(var);
 
       if (varD.size() == 1 && !varD.onMemory()) {
-        debug("spill " + var + ": " + varD) ;
+        //debug("spill " + var + ": " + varD) ;
 
         String mov = String.format(
           "mov [%s], %s", varD.getMemoryId(var), reg
@@ -166,7 +166,7 @@ public class RegisterPool {
    * prepara reg para receber o valor de var no lado esquerdo
    */
   public void prepareDestiny(String reg, String var) {
-    debug(reg + " dest of " + var);
+    //debug(reg + " dest of " + var);
 
     for (String _var : copy(regDescriptor(reg)))
       if (!var.equals(_var))
@@ -180,7 +180,7 @@ public class RegisterPool {
    * prepara reg para receber o valor de var no lado direito
    */
   public void prepareSource(String reg, String var) {
-    debug(reg + " source of " + var);
+    //debug(reg + " source of " + var);
 
     if (!regDescriptor(reg).contains(var)) {
       for (String _var : copy(regDescriptor(reg)))
@@ -227,7 +227,7 @@ public class RegisterPool {
       if (!varNeedSaving(var))
         continue;
 
-      debug("spill " + var + " for exit");
+      //debug("spill " + var + " for exit");
 
       String reg = varD.iterator().next();
 
@@ -303,7 +303,7 @@ public class RegisterPool {
   }
 
   public void debug(String msg) {
-    code.add(Nasm.COMMENT.make(msg));
+    //code.add(Nasm.COMMENT.make(msg));
   }
 
   private Set<String> copy(Set<String> s) {

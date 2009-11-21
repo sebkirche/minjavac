@@ -130,6 +130,10 @@ public class TypeCheckerVisitor implements TypeVisitor {
     return null;
   }
 
+  public Type visit(VoidType v) {
+    return null;
+  }
+
   public Type visit(IdentifierType n) {
     return null;
   }
