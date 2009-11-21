@@ -193,10 +193,10 @@ public class RegisterPool {
       );
 
       emit(Nasm.OP.make(mov));
-    }
 
-    regDescriptor(reg).setOnly(var);
-    varDescriptor(var).add(reg);
+      regDescriptor(reg).setOnly(var);
+      varDescriptor(var).add(reg);
+    }
   }
 
   public String getRegForDestiny(String var) {
@@ -302,7 +302,7 @@ public class RegisterPool {
     code.add(i);
   }
 
-  private void debug(String msg) {
+  public void debug(String msg) {
     code.add(Nasm.COMMENT.make(msg));
   }
 
