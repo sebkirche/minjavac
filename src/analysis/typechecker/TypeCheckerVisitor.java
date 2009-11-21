@@ -50,7 +50,11 @@ public class TypeCheckerVisitor implements TypeVisitor {
     currentClass = symbolTable.getClass(mainC.classNameId.toString());
     currentMethod = currentClass.getMethod("main");
 
-    mainC.mainStmt.accept(this);
+    for (VarDecl vl : mainC.localVars.getList())
+      vl.accept(this);
+
+    for (Statement stmt : mainC.statements.getList())
+      stmt.accept(this);
 
     currentMethod = null;
     currentClass = null;

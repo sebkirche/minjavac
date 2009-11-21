@@ -142,7 +142,11 @@ ClassDeclList ClassDeclarationList() :
 MainClass MainClass() :
 {
   Identifier name, args;
-  Statement stmt;
+  VarDeclList vl = new VarDeclList();
+  StatementList stl = new StatementList();
+
+  Identifier voidId = new Identifier("void@", null);
+  vl.addElement(new VarDecl(VoidType.instance(), voidId));
 }
 {
   <CLASS> name = Identifier()
@@ -152,10 +156,10 @@ MainClass MainClass() :
       <STRING> <LBRACKET> <RBRACKET> args = Identifier()
     <RPARENS>
     <LBRACE>
-      stmt = Statement()
+      [VarDeclarationOrStatement(vl, stl)]
     <RBRACE>
   <RBRACE>
-  { return new MainClass(name, args, stmt); }
+  { return new MainClass(name, args, vl, stl); }
 }
 
 ClassDecl ClassDeclaration() :

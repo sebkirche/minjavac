@@ -53,7 +53,11 @@ public class SymbolTableBuilderVisitor implements Visitor {
     currentMethod = currentClass.getMethod("main");
     currentMethod.addParameter(param, new IdentifierType("String[]"));
 
-    mainC.mainStmt.accept(this);
+    for (VarDecl v : mainC.localVars.getList())
+      v.accept(this);
+
+    for (Statement stmt : mainC.statements.getList())
+      stmt.accept(this);
 
     currentClass = null;
     currentMethod = null;

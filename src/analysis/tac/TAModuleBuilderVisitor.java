@@ -34,7 +34,8 @@ public class TAModuleBuilderVisitor implements Visitor {
     module.startClass(mainC.classNameId.name);
     module.startProcedure("main");
 
-    mainC.mainStmt.accept(this);
+    for (Statement stmt : mainC.statements.getList())
+      stmt.accept(this);
 
     module.closeProcedure();
     module.closeClass();
