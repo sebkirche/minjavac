@@ -49,7 +49,7 @@ public class BytecodeEmitter implements Visitor {
   private void emitStandardConstructor(String baseClass) {
     Bytecode.directive(".method public <init>()V");
 
-    Bytecode.code(withConstant("iload", 0));
+    Bytecode.code(withConstant("aload", 0));
     Bytecode.code(
       "invokenonvirtual " + baseClass + "/<init>()V"
     );
@@ -78,9 +78,9 @@ public class BytecodeEmitter implements Visitor {
     return !(t instanceof IntegerType || t instanceof BooleanType);
   }
 
-  private boolean isFieldVar(String varN) {
-    ClassDescriptor cd = symT.getClass(currentClass);
-    return cd.isInScope(varN);
+  private boolean isLocalVar(String varN) {
+    MethodDescriptor md = getMethodDescriptor();
+    return md.getVar(varN) != null;
   }
 
   private String withConstant(String cmd, int c) {
@@ -134,6 +134,7 @@ public class BytecodeEmitter implements Visitor {
   public void visit(MainClass mainC) {
     String classN = mainC.classNameId.name;
     Bytecode.setClassName(classN);
+    currentClass = classN;
 
     Bytecode.directive(".class public " + classN);
     Bytecode.directive(".super java/lang/Object");
@@ -148,6 +149,7 @@ public class BytecodeEmitter implements Visitor {
     Bytecode.directive(".limit locals " + setupLocalsArray(methodD));
     Bytecode.newline();
 
+    currentMethod = "main";
     NamePool.reset();
     resetStack();
 
@@ -178,10 +180,11 @@ public class BytecodeEmitter implements Visitor {
     Bytecode.directive(".class public " + classN);
     Bytecode.directive(".super " + baseClassN);
 
-    for (VarDecl field : classDecl.fieldVarList.getList()) {
+    if (!classDecl.fieldVarList.getList().isEmpty())
       Bytecode.newline();
+    
+    for (VarDecl field : classDecl.fieldVarList.getList())
       field.accept(this);
-    }
 
     Bytecode.newline2();
     emitStandardConstructor(baseClassN);
@@ -321,7 +324,7 @@ public class BytecodeEmitter implements Visitor {
       Bytecode.code("pop");
       decrStack();
     }
-    else if (cd.isInScope(varN)) {
+    else if (!isLocalVar(varN)) {
       // field var
       Bytecode.code(withConstant("aload", 0));
       incrStack();
@@ -444,7 +447,7 @@ public class BytecodeEmitter implements Visitor {
   public void visit(PrefixAdd preAdd) {
     Identifier var = (Identifier)preAdd.exp;
 
-    if (!isFieldVar(var.name)) {
+    if (isLocalVar(var.name)) {
       MethodDescriptor md = getMethodDescriptor();
       VariableDescriptor vd = md.getVar(var.name);
 
@@ -461,7 +464,7 @@ public class BytecodeEmitter implements Visitor {
   public void visit(PrefixSub preSub) {
     Identifier var = (Identifier)preSub.exp;
 
-    if (!isFieldVar(var.name)) {
+    if (isLocalVar(var.name)) {
       MethodDescriptor md = getMethodDescriptor();
       VariableDescriptor vd = md.getVar(var.name);
 
@@ -479,7 +482,7 @@ public class BytecodeEmitter implements Visitor {
     Identifier var = (Identifier)posAdd.exp;
     var.accept(this);
 
-    if (!isFieldVar(var.name)) {
+    if (isLocalVar(var.name)) {
       MethodDescriptor md = getMethodDescriptor();
       VariableDescriptor vd = md.getVar(var.name);
 
@@ -495,7 +498,7 @@ public class BytecodeEmitter implements Visitor {
     Identifier var = (Identifier)posSub.exp;
     var.accept(this);
 
-    if (!isFieldVar(var.name)) {
+    if (isLocalVar(var.name)) {
       MethodDescriptor md = getMethodDescriptor();
       VariableDescriptor vd = md.getVar(var.name);
 
@@ -547,7 +550,7 @@ public class BytecodeEmitter implements Visitor {
 
   public void visit(NewArray newArray) {
     newArray.sizeExpr.accept(this);
-    Bytecode.code("newarray I");
+    Bytecode.code("newarray int");
   }
 
   public void visit(NewObject newObj) {
@@ -566,7 +569,7 @@ public class BytecodeEmitter implements Visitor {
   public void visit(Identifier id) {
     String varN = id.name;
 
-    if (isFieldVar(varN)) {
+    if (!isLocalVar(varN)) {
       ClassDescriptor cd = symT.getClass(currentClass);
       VariableDescriptor vd = cd.getVarInScope(varN);
       String varTypeD = typeDescriptor(vd.type());

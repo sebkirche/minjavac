@@ -10,6 +10,7 @@ import backend.nasm.NasmGenerator;
 import backend.jasmin.BytecodeEmitter;
 
 public class minjavac {
+  private static String sourceFile;
   private static String sourceName;
   private static Properties config;
 
@@ -22,10 +23,11 @@ public class minjavac {
     config = new Properties();
     config.load(minjavac.class.getResourceAsStream("config.txt"));
 
-    int p = args[0].lastIndexOf('.');
-    sourceName = args[0].substring(0, p);
+    sourceFile = args[0];
+    int p = sourceFile.lastIndexOf('.');
+    sourceName = sourceFile.substring(0, p);
 
-    new Parser(new FileInputStream(args[0]));
+    new Parser(new FileInputStream(sourceFile));
 
     if (args.length == 3) {
       assertUsage(args[1].equals("-backend"));
@@ -137,7 +139,8 @@ public class minjavac {
       String classN = c.getName();
       String jasmin_class = classN + ".jasmin";
 
-      String cmd = "java -jar " + jasmin_path + " " + jasmin_class;
+      String cmd = config.getProperty("jasmin_cmd");
+      cmd = String.format(cmd, jasmin_path, jasmin_class);
       System.out.println(cmd);
 
       Process proc = Runtime.getRuntime().exec(cmd);

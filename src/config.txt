@@ -21,3 +21,8 @@ runtime_lib_path = C:\\GiulianoXT\\workspace\\MinJavaC_ext\\test\\runtime.c
 # jasmin assembler path
 
 jasmin_path = C:\\GiulianoXT\\bin\\jasmin-2.3\\jasmin.jar
+
+
+# jasmin invocation line
+
+jasmin_cmd = java -jar %s -g %s
