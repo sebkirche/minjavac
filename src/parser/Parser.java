@@ -665,7 +665,7 @@ public class Parser implements ParserConstants {
   Exp indexExp, tmp;
   Statement assign;
   Identifier id;
-  Identifier voidId = new Identifier("void@", null); 
+  Identifier voidId = new Identifier("void@", null);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ID:
       id = Identifier();
@@ -780,7 +780,6 @@ public class Parser implements ParserConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
-    jj_consume_token(SEMI);
      {if (true) return new Assign(var, v);}
     throw new Error("Missing return statement in function");
   }
@@ -844,6 +843,7 @@ public class Parser implements ParserConstants {
     case MULT_ASSIGN:
     case DIV_ASSIGN:
       assign = CompoundAssignment(id);
+      jj_consume_token(SEMI);
       {if (true) return assign;}
       break;
     case DOT:

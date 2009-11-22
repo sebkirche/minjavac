@@ -9,9 +9,41 @@ public class BytecodeEmitter implements Visitor {
   private SymbolTable symT;
   private String currentClass;
   private String currentMethod;
+  private int stackSize, maxStackSize;
 
   public BytecodeEmitter() {
     symT = SymbolTable.getInstance();
+  }
+
+  private void resetStack() {
+    stackSize = maxStackSize = 0;
+  }
+
+  private void incrStack() {
+    incrStack(1);
+  }
+
+  private void incrStack(int n) {
+    stackSize += n;
+    maxStackSize = Math.max(maxStackSize, stackSize);
+  }
+
+  private void decrStack() {
+    decrStack(1);
+  }
+
+  private void decrStack(int n) {
+    stackSize -= n;
+    if (stackSize < 0)
+      throw new IllegalArgumentException("BytecodeEmitter::decrStack");
+  }
+
+  private void saveStack() {
+    Bytecode.newline();
+    Bytecode.directive(".limit stack " + maxStackSize);
+
+    if (stackSize != 0)
+      throw new IllegalArgumentException("BytecodeEmitter::saveStack");
   }
 
   private void emitStandardConstructor(String baseClass) {
@@ -52,8 +84,16 @@ public class BytecodeEmitter implements Visitor {
   }
 
   private String withConstant(String cmd, int c) {
-    int lim = cmd.equals("iconst") ? 5 : 3;
-    return cmd + (c >= 0 && c <= lim ? '_' : ' ') + c;
+    if (cmd.equals("iconst")) {
+      if (c >= -1 && c <= 5)
+        return "iconst_" + (c == -1 ? "m1" : c);
+      else if (c >= -128 && c <= 127)
+        return "bipush " + c;
+      else
+        return "ldc " + c;
+    }
+
+    return cmd + (c >= 0 && c <= 3 ? '_' : ' ') + c;
   }
 
   private String typeDescriptor(Type t) {
@@ -105,12 +145,18 @@ public class BytecodeEmitter implements Visitor {
 
     Bytecode.newline2();
     Bytecode.directive(".method public static main([Ljava/lang/String;)V");
-    Bytecode.label(".limit locals " + setupLocalsArray(methodD));
+    Bytecode.directive(".limit locals " + setupLocalsArray(methodD));
+    Bytecode.newline();
+
+    NamePool.reset();
+    resetStack();
 
     for (Statement stmt : mainC.statements.getList())
       stmt.accept(this);
 
     Bytecode.code("return");
+
+    saveStack();
     Bytecode.directive(".end method");
   }
 
@@ -127,6 +173,7 @@ public class BytecodeEmitter implements Visitor {
     String classN = classDecl.classId.name;
     String baseClassN = classDecl.baseClassId.name;
     currentClass = classN;
+    Bytecode.setClassName(classN);
 
     Bytecode.directive(".class public " + classN);
     Bytecode.directive(".super " + baseClassN);
@@ -158,10 +205,12 @@ public class BytecodeEmitter implements Visitor {
     String methodSig = methodSignatureDescriptor(md);
     currentMethod = methodN;
 
-    NamePool.reset();
-
     Bytecode.directive(".method public " + methodN + methodSig);
-    Bytecode.label(".limit locals " + setupLocalsArray(md));
+    Bytecode.directive(".limit locals " + setupLocalsArray(md));
+    Bytecode.newline();
+
+    NamePool.reset();
+    resetStack();
 
     for (Statement stmt : mdecl.statementList.getList())
       stmt.accept(this);
@@ -173,6 +222,8 @@ public class BytecodeEmitter implements Visitor {
     else
       Bytecode.code("ireturn");
 
+    decrStack();
+    saveStack();
     Bytecode.directive(".end method");
   }
 
@@ -182,9 +233,9 @@ public class BytecodeEmitter implements Visitor {
   }
 
   public void visit(If ifStmt) {
-    String trueL = NamePool.nextCode("if_true");
-    String falseL = NamePool.nextCode("if_false");
-    String nextL = NamePool.nextCode("if_next");
+    String trueL = NamePool.nextName("if_true");
+    String falseL = NamePool.nextName("if_false");
+    String nextL = NamePool.nextName("if_next");
 
     evalBooleanJump(ifStmt.boolExpr, trueL, falseL);
 
@@ -199,9 +250,9 @@ public class BytecodeEmitter implements Visitor {
   }
 
   public void visit(While whileStmt) {
-    String loop = NamePool.nextCode("loop");
-    String trueL = NamePool.nextCode("while_true");
-    String falseL = NamePool.nextCode("while_false");
+    String loop = NamePool.nextName("loop");
+    String trueL = NamePool.nextName("while_true");
+    String falseL = NamePool.nextName("while_false");
 
     Bytecode.label(loop);
     evalBooleanJump(whileStmt.boolExpr, trueL, falseL);
@@ -217,9 +268,9 @@ public class BytecodeEmitter implements Visitor {
     for (Statement stmt : forStmt.init.getList())
       stmt.accept(this);
     
-    String loop = NamePool.nextCode("loop");
-    String trueL = NamePool.nextCode("for_true");
-    String falseL = NamePool.nextCode("for_false");
+    String loop = NamePool.nextName("loop");
+    String trueL = NamePool.nextName("for_true");
+    String falseL = NamePool.nextName("for_false");
 
     Bytecode.label(loop);
     evalBooleanJump(forStmt.boolExpr, trueL, falseL);
@@ -236,8 +287,10 @@ public class BytecodeEmitter implements Visitor {
 
   public void visit(Print printInt) {
     Bytecode.code("getstatic java/lang/System/out Ljava/io/PrintStream;");
+    incrStack();
 
     printInt.intExpr.accept(this);
+
     Bytecode.code(
       "invokestatic java/lang/String/valueOf(I)Ljava/lang/String;"
     );
@@ -245,35 +298,41 @@ public class BytecodeEmitter implements Visitor {
     Bytecode.code(
       "invokevirtual java/io/PrintStream/println(Ljava/lang/String;)V"
     );
+    decrStack(2);
   }
 
   public void visit(PrintString printStr) {
     Bytecode.code("getstatic java/lang/System/out Ljava/io/PrintStream;");
     Bytecode.code("ldc \"" + printStr.str + "\"");
+    incrStack(2);
     Bytecode.code(
-      "invokevirtual java/io/PrintStream/println(Ljava/lang/String;)V"
+      "invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V"
     );
+    decrStack(2);
   }
 
   public void visit(Assign assign) {
-    assign.valueExpr.accept(this);
-
     String varN = assign.varId.name;
     String classN = currentClass;
     ClassDescriptor cd = symT.getClass(classN);
 
-    if (varN.equals("@void")) {
+    if (varN.equals("void@")) {
+      assign.valueExpr.accept(this);
       Bytecode.code("pop");
+      decrStack();
     }
     else if (cd.isInScope(varN)) {
       // field var
       Bytecode.code(withConstant("aload", 0));
+      incrStack();
+      
       assign.valueExpr.accept(this);
 
       VariableDescriptor vd = cd.getVarInScope(varN);
       String varTypeD = typeDescriptor(vd.type());
 
       Bytecode.code("putfield " + classN + "/" + varN + " " + varTypeD);
+      decrStack(2);
     }
     else {
       // local var
@@ -283,6 +342,7 @@ public class BytecodeEmitter implements Visitor {
 
       String cmd = isReferenceType(vd.type()) ? "astore" : "istore";
       Bytecode.code(withConstant(cmd, vd.getOffset()));
+      decrStack();
     }
   }
 
@@ -291,24 +351,30 @@ public class BytecodeEmitter implements Visitor {
     arrayAssign.indexExpr.accept(this);
     arrayAssign.valueExpr.accept(this);
     Bytecode.code("iastore");
+    decrStack(3);
   }
 
   public void visit(And and) {
     and.e1.accept(this);
     and.e2.accept(this);
     Bytecode.code("iand");
+    decrStack();
   }
 
   public void visit(Or or) {
     or.e1.accept(this);
     or.e2.accept(this);
     Bytecode.code("ior");
+    decrStack();
   }
 
   public void visit(Not not) {
     Bytecode.code(withConstant("iconst", 1));
+    incrStack();
     not.boolExpr.accept(this);
+    
     Bytecode.code("isub");
+    decrStack();
   }
 
   public void visit(Equal e) {
@@ -339,30 +405,35 @@ public class BytecodeEmitter implements Visitor {
     add.e1.accept(this);
     add.e2.accept(this);
     Bytecode.code("iadd");
+    decrStack();
   }
 
   public void visit(Minus minus) {
     minus.e1.accept(this);
     minus.e2.accept(this);
     Bytecode.code("isub");
+    decrStack();
   }
 
   public void visit(Times mult) {
     mult.e1.accept(this);
     mult.e2.accept(this);
     Bytecode.code("imul");
+    decrStack();
   }
 
   public void visit(Div div) {
     div.e1.accept(this);
     div.e2.accept(this);
     Bytecode.code("idiv");
+    decrStack();
   }
 
   public void visit(ArrayLookup lookup) {
     lookup.arrayExpr.accept(this);
     lookup.indexExpr.accept(this);
     Bytecode.code("iaload");
+    decrStack();
   }
 
   public void visit(ArrayLength length) {
@@ -444,28 +515,34 @@ public class BytecodeEmitter implements Visitor {
 
     String callDescriptor = classN + "/" + methodN
                           + methodSignatureDescriptor(md);
-    
-    call.objectExpr.accept(this);
-    for (Exp param : call.paramExprList.getList())
-      param.accept(this);
 
+    call.objectExpr.accept(this);
+    for (Exp param : call.paramExprList.getList()) {
+      param.accept(this);
+    }
+    
     Bytecode.code("invokevirtual " + callDescriptor);
+    decrStack(call.paramExprList.getList().size());
   }
 
   public void visit(IntegerLiteral intLit) {
     Bytecode.code(withConstant("iconst", intLit.value));
+    incrStack();
   }
 
   public void visit(True trueV) {
     Bytecode.code(withConstant("iconst", 1));
+    incrStack();
   }
 
   public void visit(False falseV) {
     Bytecode.code(withConstant("iconst", 0));
+    incrStack();
   }
 
   public void visit(This thisV) {
     Bytecode.code(withConstant("aload", 0));
+    incrStack();
   }
 
   public void visit(NewArray newArray) {
@@ -474,7 +551,16 @@ public class BytecodeEmitter implements Visitor {
   }
 
   public void visit(NewObject newObj) {
-    Bytecode.code("new " + newObj.classNameId);
+    String classN = newObj.classNameId.name;
+
+    Bytecode.code("new " + classN);
+    incrStack();
+
+    Bytecode.code("dup");
+    incrStack();
+
+    Bytecode.code("invokespecial " + classN + "/<init>()V");
+    decrStack();
   }
 
   public void visit(Identifier id) {
@@ -486,6 +572,7 @@ public class BytecodeEmitter implements Visitor {
       String varTypeD = typeDescriptor(vd.type());
 
       Bytecode.code(withConstant("aload", 0));
+      incrStack();
       Bytecode.code("getfield " + currentClass + "/" + varN + " " + varTypeD);
     }
     else {
@@ -494,6 +581,7 @@ public class BytecodeEmitter implements Visitor {
 
       String cmd = isReferenceType(vd.type()) ? "aload" : "iload";
       Bytecode.code(withConstant(cmd, vd.getOffset()));
+      incrStack();
     }
   }
 
@@ -533,7 +621,7 @@ public class BytecodeEmitter implements Visitor {
     }
     else if (e instanceof And) {
       And and = (And)e;
-      String cont = NamePool.nextCode("and_cont");
+      String cont = NamePool.nextName("and_cont");
 
       evalBooleanJump(and.e1, cont, falseL);
       Bytecode.label(cont);
@@ -541,7 +629,7 @@ public class BytecodeEmitter implements Visitor {
     }
     else if (e instanceof Or) {
       Or or = (Or)e;
-      String cont = NamePool.nextCode("or_Cont");
+      String cont = NamePool.nextName("or_Cont");
 
       evalBooleanJump(or.e1, trueL, cont);
       Bytecode.label(cont);
@@ -594,22 +682,25 @@ public class BytecodeEmitter implements Visitor {
     String cmd = "if_" + typeCode + "cmp" + cond;
 
     Bytecode.code(cmd + ' ' + trueL);
+    decrStack(2);
     Bytecode.code("goto " + falseL);
   }
 
   private void visitComparison(Exp cmp, String s) {
-    String trueL = NamePool.nextCode(s);
-    String falseL = NamePool.nextCode("not_" + s);
-    String nextL = NamePool.nextCode("next");
+    String trueL = NamePool.nextName(s);
+    String falseL = NamePool.nextName("not_" + s);
+    String nextL = NamePool.nextName("next");
 
     evalBooleanJump(cmp, trueL, falseL);
 
     Bytecode.label(trueL);
     Bytecode.code(withConstant("iconst", 1));
+    incrStack();
     Bytecode.code("goto " + nextL);
 
     Bytecode.label(falseL);
     Bytecode.code(withConstant("iconst", 0));
+    incrStack();
 
     Bytecode.label(nextL);
   }

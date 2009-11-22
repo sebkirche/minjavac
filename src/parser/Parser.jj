@@ -552,7 +552,7 @@ Statement CompoundAssignment(Identifier var) :
     | <SUB_ASSIGN>  v = Expression() { v = new Minus(var, v); }
     | <MULT_ASSIGN> v = Expression() { v = new Times(var, v); }
     | <DIV_ASSIGN>  v = Expression() { v = new Div(var, v); }
-   ) <SEMI>
+   )
    { return new Assign(var, v); }
 }
 
@@ -586,7 +586,7 @@ Statement IdentifierStatementTail(Identifier id) :
     assign = CompoundArrayAssignment(id, e1)
     { return assign; }
   |
-    assign = CompoundAssignment(id)
+    assign = CompoundAssignment(id) <SEMI>
     { return assign; }
   |
     <DOT> idM = Identifier() <LPARENS> [ExpressionList(el)] <RPARENS> <SEMI>

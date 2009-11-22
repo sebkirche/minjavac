@@ -8,6 +8,10 @@ public class NamePool {
     counts.clear();
   }
 
+  public static String nextName(String s) {
+    return s + nextCode(s);
+  }
+
   public static String nextCode(String s) {
     Integer i = counts.remove(s);
 

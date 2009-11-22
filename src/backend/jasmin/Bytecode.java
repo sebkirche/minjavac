@@ -23,6 +23,10 @@ public class Bytecode {
     lines.add("\n");
   }
 
+  public static void debug(String s) {
+    code("; " + s);
+  }
+
   public static void directive(String s) {
     lines.add(s);
   }
@@ -31,7 +35,7 @@ public class Bytecode {
     if (!lines.get(lines.size()-1).trim().isEmpty())
       newline();
     
-    lines.add("  " + l + ":");
+    lines.add(" " + l + ":");
   }
 
   public static void code(String c) {
