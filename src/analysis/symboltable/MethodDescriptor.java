@@ -85,6 +85,13 @@ public class MethodDescriptor {
     return false;
   }
 
+  public VariableDescriptor getVar(String varName) {
+    if (containsVar(varName))
+      return localVarMap.get(varName);
+    else
+      return getParameter(varName);
+  }
+
   public VariableDescriptor getLocalVar(String varName) {
     return localVarMap.get(varName);
   }

@@ -19,11 +19,18 @@ public class Bytecode {
     lines.add("");
   }
 
+  public static void newline2() {
+    lines.add("\n");
+  }
+
   public static void directive(String s) {
     lines.add(s);
   }
   
   public static void label(String l) {
+    if (!lines.get(lines.size()-1).trim().isEmpty())
+      newline();
+    
     lines.add("  " + l + ":");
   }
 
